@@ -117,6 +117,35 @@ textarea{min-height:56px;resize:none;line-height:1.5}
 .modal-close{position:absolute;top:14px;right:14px;background:var(--bg);border:none;border-radius:50%;width:30px;height:30px;font-size:16px;cursor:pointer;color:var(--sub);display:flex;align-items:center;justify-content:center}
 .toast{position:fixed;top:calc(var(--safe-top) + 62px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:9px 18px;border-radius:20px;font-size:13px;z-index:300;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}.hidden{display:none!important}
+
+/* 予算バー */
+.budget-bar{background:var(--card);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;border:1px solid var(--border)}
+.budget-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:6px}
+.budget-row .bl{color:var(--sub)}
+.budget-row .bv{font-weight:700}
+.budget-progress{height:8px;background:var(--bg);border-radius:4px;overflow:hidden}
+.budget-progress-inner{height:100%;border-radius:4px;transition:width .3s}
+.budget-ok{background:var(--accent)}.budget-warn{background:#F59E0B}.budget-over{background:var(--red)}
+
+/* 印刷 */
+@media print{
+  @page{size:A4 landscape;margin:12mm 10mm}
+  .header,.tabs,.ecard-foot,.sh-btn,.btn,.btn-add-item,.no-print{display:none!important}
+  body{background:#fff;font-size:11px}
+  .main{padding:0!important}
+  .panel{display:block!important;padding:0!important}
+  #panel-input,#panel-list,#panel-share{display:none!important}
+  #panel-summary{display:block!important}
+  .summary-bar{border-radius:4px;padding:8px 12px;margin-bottom:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .s-value{font-size:14px}.s-label{font-size:9px}
+  .day-card{margin-bottom:6px;break-inside:avoid}
+  .day-hd{padding:6px 10px;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .budget-bar{margin-bottom:8px;padding:8px 12px}
+  .print-title{display:block!important;font-size:14px;font-weight:700;margin-bottom:8px}
+  .erow{padding:2px 0;font-size:11px}
+  .card{padding:10px;margin-bottom:6px}
+}
+.print-title{display:none}
 </style>
 </head>
 <body>
@@ -136,6 +165,7 @@ textarea{min-height:56px;resize:none;line-height:1.5}
 
 <div class="main">
   <div class="panel active" id="panel-summary">
+    <div class="print-title" id="printTitle"></div>
     <div class="summary-bar">
       <div class="s-item"><div class="s-label">下代合計</div><div class="s-value" id="totShita">¥0</div></div>
       <div class="s-div"></div>
@@ -143,6 +173,7 @@ textarea{min-height:56px;resize:none;line-height:1.5}
       <div class="s-div"></div>
       <div class="s-item"><div class="s-label">マシ合計</div><div class="s-value" id="totMashi">¥0</div></div>
     </div>
+    <div id="budgetBar"></div>
     <div id="daySummaries"></div>
   </div>
 
@@ -188,6 +219,10 @@ textarea{min-height:56px;resize:none;line-height:1.5}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>テキストコピー
         </button>
       </div>
+      <button class="sh-btn no-print" style="background:#6D28D9;color:#fff;width:100%;flex-direction:row;justify-content:center;gap:10px;margin-bottom:12px" onclick="window.print()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        横向きで印刷（集計画面）
+      </button>
       <button class="btn btn-gray" style="font-size:13px;padding:11px" onclick="if(confirm('この催事のデータをすべて削除しますか？'))clearAll()">この催事のデータを削除</button>
     </div>
     <div class="card">
@@ -230,6 +265,7 @@ textarea{min-height:56px;resize:none;line-height:1.5}
     <div class="field"><label>催事名</label><input id="s_name" type="text" placeholder="例：春の催事"></div>
     <div class="field"><label>お店の名前</label><input id="s_store" type="text" placeholder="例：○○百貨店"></div>
     <div class="field"><label>開始日</label><input id="s_date" type="date"></div>
+    <div class="field"><label>予算（下代目標）</label><input id="s_budget" type="number" placeholder="例：500000" inputmode="numeric"></div>
     <div class="field"><label>日数</label>
       <select id="s_days">
         <option value="2">2日間</option><option value="3">3日間</option>
@@ -328,6 +364,7 @@ function openNewEvent(){
   document.getElementById('s_name').value='';
   document.getElementById('s_store').value='';
   document.getElementById('s_date').value='';
+  document.getElementById('s_budget').value='';
   document.getElementById('s_days').value='4';
   document.getElementById('settingsModal').dataset.mode='new';
   document.getElementById('settingsModal').classList.remove('hidden');
@@ -339,6 +376,7 @@ function openSettings(){
   document.getElementById('s_name').value=ev?.name||'';
   document.getElementById('s_store').value=ev?.storeName||'';
   document.getElementById('s_date').value=ev?.startDate||'';
+  document.getElementById('s_budget').value=ev?.budget!=null?ev.budget:'';
   document.getElementById('s_days').value=ev?.days||4;
   document.getElementById('settingsModal').dataset.mode='edit';
   document.getElementById('settingsModal').classList.remove('hidden');
@@ -348,14 +386,15 @@ function saveSettings(){
   const name=document.getElementById('s_name').value.trim();
   const storeName=document.getElementById('s_store').value.trim();
   const startDate=document.getElementById('s_date').value;
+  const budget=document.getElementById('s_budget').value!==''?parseFloat(document.getElementById('s_budget').value):null;
   const days=parseInt(document.getElementById('s_days').value)||4;
   const mode=document.getElementById('settingsModal').dataset.mode;
   if(mode==='new'){
-    const newEv={id:Date.now(),name,storeName,startDate,days,entries:[]};
+    const newEv={id:Date.now(),name,storeName,startDate,days,budget,entries:[]};
     db.events.push(newEv);db.activeId=newEv.id;
   } else {
     const ev=activeEvent();
-    if(ev){ev.name=name;ev.storeName=storeName;ev.startDate=startDate;ev.days=days;}
+    if(ev){ev.name=name;ev.storeName=storeName;ev.startDate=startDate;ev.days=days;ev.budget=budget;}
   }
   save();updateHeader();buildDaySel('daySelector',selDay,d=>selDay=d);closeSettings();renderAll();showToast('保存しました');
 }
@@ -564,6 +603,26 @@ function renderSummary(){
   }
   if(!ev)html='<div class="empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><p>ヘッダーをタップして催事を追加してください</p></div>';
   document.getElementById('daySummaries').innerHTML=html;
+
+  // 印刷タイトル
+  const store=ev?.storeName?` @ ${ev.storeName}`:'';
+  document.getElementById('printTitle').textContent=ev?(ev.name||'催事')+store+(ev?.startDate?' ／ '+ev.startDate:''):'';
+
+  // 予算バー
+  const budgetEl=document.getElementById('budgetBar');
+  if(ev?.budget){
+    const pct=Math.min(100,Math.round(ts/ev.budget*100));
+    const rem=ev.budget-ts;
+    const cls=pct>=100?'budget-over':pct>=80?'budget-warn':'budget-ok';
+    budgetEl.innerHTML=`<div class="budget-bar">
+      <div class="budget-row"><span class="bl">予算</span><span class="bv">${fmt(ev.budget)}</span></div>
+      <div class="budget-row"><span class="bl">達成率</span><span class="bv" style="color:${pct>=100?'var(--red)':pct>=80?'#D97706':'var(--accent)'}">${pct}%</span></div>
+      <div class="budget-progress"><div class="budget-progress-inner ${cls}" style="width:${pct}%"></div></div>
+      <div class="budget-row" style="margin-top:6px"><span class="bl">${rem>=0?'残り':'超過'}</span><span class="bv" style="color:${rem<0?'var(--red)':'var(--green)'}">${fmt(Math.abs(rem))}</span></div>
+    </div>`;
+  } else {
+    budgetEl.innerHTML='';
+  }
 }
 
 // ── 一覧
@@ -648,10 +707,10 @@ function exportCSV(){
   const ts=ae.reduce((a,e)=>a+entryShita(e),0);
   const tt=ae.reduce((a,e)=>a+entryTake(e),0);
   const tm=ae.reduce((a,e)=>a+entryMashi(e),0);
+  const budgetInfo=ev.budget!=null?` / 予算:${fmt(ev.budget)} 達成率:${Math.round(ts/ev.budget*100)}%`:'';
   const info=[
-    [q('催事名'),q(ev.name||'')],[q('店舗名'),q(ev.storeName||'')],
-    [q('開始日'),q(ev.startDate||'')],[q('日数'),q((ev.days||4)+'日間')],[],
-    [q('催事合計（下代）'),q(fmt(ts))],[q('催事合計（竹）'),q(fmt(tt))],[q('催事合計（マシ）'),q(fmt(tm))],[],
+    [q('催事名'),q(ev.name||''),q('店舗名'),q(ev.storeName||''),q('開始日'),q(ev.startDate||''),q('日数'),q((ev.days||4)+'日間')],
+    [q('下代合計'),q(fmt(ts)),q('竹合計'),q(fmt(tt)),q('マシ合計'),q(fmt(tm)),q('予算'),q(ev.budget!=null?fmt(ev.budget):'未設定'),q('達成率'),q(ev.budget!=null?Math.round(ts/ev.budget*100)+'%':'—')],
     ['日付','担当','お客様名','税込表地上代','品名','単品番号','下代','竹','マシ','備考','キャンセル'].map(q)
   ];
   const rows=[];
