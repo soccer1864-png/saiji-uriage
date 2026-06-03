@@ -209,13 +209,11 @@ textarea{min-height:56px;resize:none;line-height:1.5}
   <div class="panel" id="panel-share">
     <div class="card">
       <div class="card-title">共有・書き出し</div>
-      <div class="share-grid">
+      <div class="share-grid" style="grid-template-columns:1fr 1fr 1fr">
         <button class="sh-btn sh-line" onclick="shareLine()">
           <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.105.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>LINEで送る
         </button>
-        <button class="sh-btn sh-mail" onclick="shareMail()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>メールで送る
-        </button>
+
         <button class="sh-btn sh-csv" onclick="exportCSV()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>CSV出力
         </button>
@@ -223,6 +221,11 @@ textarea{min-height:56px;resize:none;line-height:1.5}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>テキストコピー
         </button>
       </div>
+      <label class="sh-btn no-print" style="background:#0369A1;color:#fff;cursor:pointer;flex-direction:row;justify-content:center;gap:8px;margin-bottom:12px;padding:14px;border-radius:10px;font-size:13px;font-weight:700;display:flex;align-items:center;width:100%" for="csvImportInput">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        CSVからデータを復元
+      </label>
+      <input type="file" id="csvImportInput" accept=".csv" style="display:none" onchange="importCSV(this)">
       <button class="sh-btn no-print" style="background:#6D28D9;color:#fff;width:100%;flex-direction:row;justify-content:center;gap:10px;margin-bottom:12px" onclick="window.print()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         全明細を横向き印刷
@@ -230,7 +233,7 @@ textarea{min-height:56px;resize:none;line-height:1.5}
       <button class="btn btn-gray" style="font-size:13px;padding:11px" onclick="if(confirm('この催事のデータをすべて削除しますか？'))clearAll()">この催事のデータを削除</button>
     </div>
     <div class="card">
-      <div class="card-title">集計テキスト</div>
+      <div class="card-title">LINE報告プレビュー</div>
       <pre id="shareText" style="font-size:12px;white-space:pre-wrap;color:var(--text);line-height:1.8"></pre>
     </div>
   </div>
@@ -717,10 +720,40 @@ function buildText(){
   return lines.join('\n');
 }
 
-function renderShare(){document.getElementById('shareText').textContent=buildText();}
-function shareLine(){window.open('https://line.me/R/msg/text/?'+encodeURIComponent(buildText()));}
-function shareMail(){const ev=activeEvent();window.location.href='mailto:?subject='+encodeURIComponent((ev?.name||'催事')+' 売上集計')+'&body='+encodeURIComponent(buildText());}
-function copyText(){const t=buildText();if(navigator.clipboard){navigator.clipboard.writeText(t).then(()=>showToast('コピーしました'));}else{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a);showToast('コピーしました');}}
+function renderShare(){
+  document.getElementById('shareText').textContent=buildLineReport();
+}
+function buildLineReport(){
+  const ev=activeEvent();if(!ev)return '催事が選択されていません';
+  const ae=activeEntries();
+  const days=ev.days||4;
+  const lines=[];
+  lines.push(`【${ev.name||'催事'}${ev.storeName?' @ '+ev.storeName:''}】売上報告`);
+  if(ev.startDate)lines.push(ev.startDate);
+  lines.push('');
+  for(let d=1;d<=days;d++){
+    const act=entries().filter(e=>e.day===d&&!e.cancelled);
+    if(!act.length)continue;
+    const s=act.reduce((a,e)=>a+entryShita(e),0);
+    const pts=act.reduce((a,e)=>a+(e.items||[]).length,0);
+    lines.push(`${dayLabel(d)}`);
+    lines.push(`  売上下代：${fmt(s)}`);
+    lines.push(`  売上点数：${pts}点`);
+  }
+  lines.push('');
+  const ts=ae.reduce((a,e)=>a+entryShita(e),0);
+  const totalPts=ae.reduce((a,e)=>a+(e.items||[]).length,0);
+  lines.push(`累計下代：${fmt(ts)}`);
+  lines.push(`累計点数：${totalPts}点`);
+  if(ev.budget){
+    const pct=Math.round(ts/ev.budget*100);
+    lines.push(`予算：${fmt(ev.budget)}（達成率 ${pct}%）`);
+  }
+  return lines.join('\n');
+}
+function shareLine(){window.open('https://line.me/R/msg/text/?'+encodeURIComponent(buildLineReport()));}
+
+function copyText(){const t=buildLineReport();if(navigator.clipboard){navigator.clipboard.writeText(t).then(()=>showToast('コピーしました'));}else{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a);showToast('コピーしました');}}
 
 function exportCSV(){
   const ev=activeEvent();if(!ev){showToast('催事を選択してください');return;}
@@ -825,6 +858,98 @@ function buildPrintDetail(){
 }
 
 window.onbeforeprint=buildPrintDetail;
+
+
+// ── CSVインポート
+function importCSV(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const text=e.target.result.replace(/^﻿/,'');
+      const rows=text.split(/
+?
+/).map(r=>{
+        const cols=[];let inQ=false,cur='';
+        for(let i=0;i<r.length;i++){
+          const c=r[i];
+          if(c==='"'){if(inQ&&r[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+          else if(c===','&&!inQ){cols.push(cur);cur='';}
+          else cur+=c;
+        }
+        cols.push(cur);return cols;
+      }).filter(r=>r.some(c=>c.trim()));
+
+      // 行1: 催事名,name,店舗名,store,開始日,date,日数,X日間
+      const r0=rows[0]||[];
+      const evName=r0[1]||'';
+      const storeName=r0[3]||'';
+      const startDate=r0[5]||'';
+      const daysStr=r0[7]||'4';
+      const days=parseInt(daysStr)||4;
+      // 行2: 合計行（スキップ）
+      // 行3: ヘッダー行（スキップ）
+      // 行4以降: データ
+      const dataRows=rows.slice(3);
+
+      // エントリを再構築（お客様名が空の行は前の行と同じエントリ）
+      const importedEntries=[];
+      let currentEntry=null;
+      const dayMap={};// "X日目（M/D・曜）" → dayNumber
+      for(let d=1;d<=days;d++)dayMap[d]=d;
+
+      dataRows.forEach(row=>{
+        if(row.length<6)return;
+        const [dayStr,tanto,customer,hyojiStr,hinmei,bango,shitaStr,takeStr,mashiStr,costStr,biko,cancelStr]=row;
+        if(customer){
+          // 新しいエントリ
+          const day=parseInt(dayStr)||1;
+          // "X日目" から数字を抽出
+          const dayNum=parseInt((dayStr||'').match(/(\d+)日目/)?.[1])||1;
+          const hyoji=hyojiStr?parseFloat(hyojiStr.replace(/,/g,''))||null:null;
+          currentEntry={
+            id:Date.now()+Math.random(),
+            day:dayNum,
+            cancelled:cancelStr==='キャンセル',
+            tanto:tanto||'',
+            customer:customer||'',
+            hyoji,
+            items:[]
+          };
+          importedEntries.push(currentEntry);
+        }
+        if(currentEntry&&hinmei!==undefined){
+          const shita=shitaStr?parseFloat(shitaStr.replace(/,/g,''))||0:0;
+          const take=takeStr?parseFloat(takeStr.replace(/,/g,''))||null:null;
+          const cost=costStr?parseFloat(costStr.replace(/,/g,''))||null:null;
+          currentEntry.items.push({
+            hinmei:hinmei||'',bango:bango||'',
+            shita,take,
+            mashi:(shita&&take!==null)?shita-take:null,
+            cost,biko:biko||''
+          });
+        }
+      });
+
+      if(!importedEntries.length){showToast('データが見つかりませんでした');return;}
+
+      // 既存の催事を探すか新規作成
+      let ev=db.events.find(e=>e.name===evName&&e.storeName===storeName);
+      if(!ev){
+        ev={id:Date.now(),name:evName,storeName,startDate,days,budget:null,entries:[]};
+        db.events.push(ev);
+      }
+      ev.entries=[...ev.entries,...importedEntries];
+      db.activeId=ev.id;
+      save();updateHeader();buildDaySel('daySelector',selDay,d=>selDay=d);renderAll();
+      showToast(`${importedEntries.length}件を復元しました`);
+    }catch(err){
+      console.error(err);showToast('CSVの読み込みに失敗しました');
+    }
+    input.value='';
+  };
+  reader.readAsText(file,'UTF-8');
+}
 
 function renderAll(){renderSummary();}
 
