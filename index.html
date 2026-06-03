@@ -150,6 +150,15 @@ textarea{min-height:56px;resize:none;line-height:1.5}
   .pt-total td{background:#1F2937!important;color:#fff!important;font-weight:700}
 }
 .print-title{display:none}
+
+/* カスタム確認モーダル */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px}
+.confirm-box{background:var(--card);border-radius:14px;padding:24px 20px;width:100%;max-width:320px;text-align:center}
+.confirm-box p{font-size:15px;font-weight:500;margin-bottom:20px;line-height:1.5;color:var(--text)}
+.confirm-btns{display:flex;gap:10px}
+.confirm-btns button{flex:1;padding:12px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+.confirm-ok{background:var(--red);color:#fff}
+.confirm-cancel{background:var(--bg);color:var(--sub)}
 </style>
 </head>
 <body>
@@ -226,11 +235,11 @@ textarea{min-height:56px;resize:none;line-height:1.5}
         CSVからデータを復元
       </label>
       <input type="file" id="csvImportInput" accept=".csv" style="display:none" onchange="importCSV(this)">
-      <button class="sh-btn no-print" style="background:#6D28D9;color:#fff;width:100%;flex-direction:row;justify-content:center;gap:10px;margin-bottom:12px" onclick="window.print()">
+      <button class="sh-btn no-print" style="background:#6D28D9;color:#fff;width:100%;flex-direction:row;justify-content:center;gap:10px;margin-bottom:12px" onclick="buildPrintDetail();setTimeout(()=>window.print(),100)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         全明細を横向き印刷
       </button>
-      <button class="btn btn-gray" style="font-size:13px;padding:11px" onclick="if(confirm('この催事のデータをすべて削除しますか？'))clearAll()">この催事のデータを削除</button>
+      <button class="btn btn-gray" style="font-size:13px;padding:11px" onclick="confirmAndClearAll()">この催事のデータを削除</button>
     </div>
     <div class="card">
       <div class="card-title">LINE報告プレビュー</div>
@@ -306,6 +315,18 @@ textarea{min-height:56px;resize:none;line-height:1.5}
 
 <div class="toast" id="toast"></div>
 
+<!-- カスタム確認ダイアログ -->
+<div class="confirm-overlay hidden" id="confirmModal">
+  <div class="confirm-box">
+    <p id="confirmMsg"></p>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="confirmResolve(false)">キャンセル</button>
+      <button class="confirm-ok" id="confirmOkBtn" onclick="confirmResolve(true)">削除</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- 印刷用全明細テーブル -->
 <div id="printDetail" style="display:none">
   <div class="print-title" id="printDetailTitle"></div>
@@ -326,6 +347,12 @@ function save(){localStorage.setItem(KEY,JSON.stringify(db));}
 
 function activeEvent(){return db.events.find(e=>e.id===db.activeId)||null;}
 function entries(){return activeEvent()?.entries||[];}
+
+async function confirmAndClearAll(){
+  const ok=await showConfirm('この催事のデータをすべて削除しますか？','削除');
+  if(ok)clearAll();
+}
+
 function clearAll(){const ev=activeEvent();if(ev){ev.entries=[];save();renderAll();showToast('削除しました');}}
 
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
@@ -364,9 +391,9 @@ function switchEvent(id){
   updateHeader();renderAll();showToast('催事を切り替えました');
 }
 
-function deleteEvent(id){
+async function deleteEvent(id){
   const ev=db.events.find(e=>e.id===id);
-  if(!confirm(`「${ev?.name||'この催事'}」を削除しますか？データも全て消えます。`))return;
+  const ok=await showConfirm(`「${ev?.name||'この催事'}」を削除しますか？\nデータも全て消えます。`);if(!ok)return;
   db.events=db.events.filter(e=>e.id!==id);
   if(db.activeId===id)db.activeId=db.events[0]?.id||null;
   save();openEventList();updateHeader();renderAll();
@@ -582,8 +609,8 @@ function toggleCancel(id){
   e.cancelled=!e.cancelled;save();renderList();renderSummary();
   showToast(e.cancelled?'キャンセルにしました':'キャンセルを解除しました');
 }
-function deleteEntry(id){
-  if(!confirm('この明細を削除しますか？'))return;
+async function deleteEntry(id){
+  const ok=await showConfirm('この明細を削除しますか？');if(!ok)return;
   const ev=activeEvent();if(!ev)return;
   ev.entries=ev.entries.filter(e=>e.id!==id);save();renderList();renderSummary();
 }
@@ -859,6 +886,21 @@ function buildPrintDetail(){
 
 window.onbeforeprint=buildPrintDetail;
 
+
+
+// カスタム確認ダイアログ（iOS PWA対応）
+let confirmResolve=null;
+function showConfirm(msg,okLabel='削除'){
+  return new Promise(resolve=>{
+    document.getElementById('confirmMsg').textContent=msg;
+    document.getElementById('confirmOkBtn').textContent=okLabel;
+    document.getElementById('confirmModal').classList.remove('hidden');
+    confirmResolve=v=>{
+      document.getElementById('confirmModal').classList.add('hidden');
+      resolve(v);
+    };
+  });
+}
 
 // ── CSVインポート
 function importCSV(input){
