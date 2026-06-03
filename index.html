@@ -14,11 +14,11 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,'Hiragino Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.header{position:fixed;top:0;left:0;right:0;background:var(--dark);display:flex;align-items:center;padding:calc(var(--safe-top) + 8px) 16px 10px;gap:10px;z-index:100}
-.header-info{flex:1;overflow:hidden}
+.header{position:fixed;top:0;left:0;right:0;background:var(--dark);display:flex;align-items:center;padding:calc(var(--safe-top) + 8px) 16px 10px;gap:8px;z-index:100}
+.header-info{flex:1;overflow:hidden;cursor:pointer}
 .header-title{font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .header-sub{font-size:11px;color:#9CA3AF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.icon-btn{background:none;border:none;padding:8px;cursor:pointer;color:#D1D5DB;display:flex;align-items:center;border-radius:8px}
+.icon-btn{background:none;border:none;padding:8px;cursor:pointer;color:#D1D5DB;display:flex;align-items:center;border-radius:8px;flex-shrink:0}
 .tabs{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;cursor:pointer;color:var(--hint);font-size:10px;padding:8px 0}
 .tab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8}
@@ -26,7 +26,6 @@ body{font-family:-apple-system,'Hiragino Sans',sans-serif;background:var(--bg);c
 .main{padding-top:calc(var(--safe-top) + var(--header-h) + 18px);padding-bottom:calc(var(--tab-h) + 16px)}
 .panel{display:none;padding:12px 14px}.panel.active{display:block}
 
-/* Summary */
 .summary-bar{background:var(--dark);color:#fff;border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;display:flex;gap:4px}
 .s-item{flex:1;text-align:center;padding:0 4px}.s-label{font-size:10px;color:#9CA3AF;margin-bottom:3px}.s-value{font-size:17px;font-weight:700}
 .s-div{width:1px;background:rgba(255,255,255,.15);margin:4px 0}
@@ -40,7 +39,6 @@ body{font-family:-apple-system,'Hiragino Sans',sans-serif;background:var(--bg);c
 .erow:last-child{border:none}.erow .l{color:var(--sub)}.erow .v{font-weight:500}
 .erow .v.neg{color:var(--red);font-weight:700}.erow .v.pos{color:var(--green)}
 
-/* Card / Form */
 .card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;border:1px solid var(--border)}
 .card-title{font-size:14px;font-weight:700;margin-bottom:14px}
 .sec-label{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
@@ -49,38 +47,28 @@ body{font-family:-apple-system,'Hiragino Sans',sans-serif;background:var(--bg);c
 .req{color:var(--red);margin-left:2px}
 input,select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;color:var(--text);background:var(--card);outline:none;-webkit-appearance:none;font-family:inherit}
 input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-textarea{min-height:64px;resize:none;line-height:1.5}
+textarea{min-height:56px;resize:none;line-height:1.5}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-/* Item rows */
 .item-row{background:var(--bg);border-radius:8px;padding:10px 12px;margin-bottom:8px;position:relative;border:1px solid var(--border)}
-.item-row .item-num{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:8px}
-.item-mashi{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;display:inline-block;margin-top:6px}
+.item-num{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:8px}
+.item-mashi{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;display:inline-block;margin-top:4px}
 .item-mashi.pos{background:var(--green-bg);color:var(--green)}.item-mashi.neg{background:var(--red-bg);color:var(--red)}
 .btn-remove-item{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--hint);font-size:18px;cursor:pointer;padding:2px 6px;line-height:1}
 .btn-add-item{width:100%;padding:11px;border:1.5px dashed var(--accent);border-radius:8px;background:var(--accent-bg);color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px;font-family:inherit}
 
-/* Day selector */
 .day-sel{display:flex;gap:6px;flex-wrap:wrap}
 .day-btn{flex:1;min-width:50px;padding:9px 4px;border:1.5px solid var(--border);border-radius:8px;background:var(--card);font-size:13px;font-weight:500;cursor:pointer;text-align:center;color:var(--sub)}
 .day-btn.active{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);font-weight:700}
 
-/* Photos */
-.photo-area{display:flex;gap:8px;flex-wrap:wrap}
-.photo-thumb{width:68px;height:68px;border-radius:8px;object-fit:cover;border:1px solid var(--border);cursor:pointer}
-.photo-add{width:68px;height:68px;border-radius:8px;border:1.5px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--hint);font-size:11px;background:var(--bg)}
-.photo-add svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
-
-/* Buttons */
 .btn{width:100%;padding:14px;border:none;border-radius:var(--radius);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
 .btn:active{opacity:.85}.btn-primary{background:var(--accent);color:#fff}.btn-gray{background:#374151;color:#fff}
+.btn-outline{background:var(--card);color:var(--accent);border:1.5px solid var(--accent)}
 
-/* Search */
 .search-wrap{margin-bottom:10px;position:relative}
 .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--hint);fill:none;stroke-width:2;pointer-events:none}
 .search-wrap input{padding-left:36px}
 
-/* Entry card */
 .ecard{background:var(--card);border-radius:var(--radius);margin-bottom:8px;border:1px solid var(--border);overflow:hidden}
 .ecard.cancelled{opacity:.55}
 .ecard-hd{padding:10px 13px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
@@ -93,19 +81,19 @@ textarea{min-height:64px;resize:none;line-height:1.5}
 .badge-cancel{background:#F3F4F6;color:#6B7280}
 .ecard-body{padding:0 13px 10px}
 .ecard-items{background:var(--bg);border-radius:7px;padding:8px 10px;margin:6px 0}
-.ecard-item{font-size:12px;padding:4px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.ecard-item{font-size:12px;padding:5px 0;border-bottom:1px solid var(--border)}
 .ecard-item:last-child{border:none}
-.ecard-item .item-name{color:var(--text);font-weight:500;flex:1}
-.ecard-item .item-vals{color:var(--sub);font-size:11px;text-align:right;white-space:nowrap}
-.ecard-item .item-mashi-small{font-size:11px;font-weight:700;margin-left:6px}
+.ecard-item-main{display:flex;justify-content:space-between;align-items:center}
+.item-name{color:var(--text);font-weight:500;flex:1}
+.item-vals{color:var(--sub);font-size:11px;text-align:right;white-space:nowrap}
+.item-mashi-small{font-size:11px;font-weight:700;margin-left:6px}
+.item-biko{font-size:11px;color:var(--hint);margin-top:2px}
 .ecard-foot{display:flex;gap:6px;padding:8px 13px;border-top:1px solid var(--bg)}
 .ecard-foot button{flex:1;padding:8px 6px;border:none;border-radius:7px;font-size:12px;cursor:pointer;font-weight:600;font-family:inherit}
 .btn-edit{background:#EFF6FF;color:var(--accent)}.btn-ctoggle{background:#FFF7ED;color:#D97706}.btn-del{background:var(--red-bg);color:var(--red)}
 
-/* Divider */
 .divider{height:1px;background:var(--border);margin:14px 0}
 
-/* Share */
 .share-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .sh-btn{padding:14px 8px;border-radius:var(--radius);border:none;font-size:13px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:inherit}
 .sh-btn svg{width:26px;height:26px}
@@ -114,7 +102,15 @@ textarea{min-height:64px;resize:none;line-height:1.5}
 .empty svg{width:44px;height:44px;stroke:var(--border);fill:none;stroke-width:1.5;margin-bottom:10px}
 .empty p{font-size:14px}
 
-/* Modal */
+/* Event list */
+.event-card{background:var(--card);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px;border:1px solid var(--border);display:flex;align-items:center;gap:12px;cursor:pointer}
+.event-card.active-event{border-color:var(--accent);background:var(--accent-bg)}
+.event-card-info{flex:1;overflow:hidden}
+.event-card-name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.event-card-sub{font-size:12px;color:var(--sub);margin-top:2px}
+.event-card-check{color:var(--accent);font-size:20px;flex-shrink:0}
+.event-card-del{background:none;border:none;color:var(--hint);font-size:20px;cursor:pointer;padding:4px;flex-shrink:0}
+
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end}
 .modal{background:var(--card);border-radius:16px 16px 0 0;padding:20px 16px;padding-bottom:calc(20px + env(safe-area-inset-bottom));width:100%;max-height:92vh;overflow-y:auto;position:relative}
 .modal h2{font-size:16px;font-weight:700;margin-bottom:14px}
@@ -126,18 +122,19 @@ textarea{min-height:64px;resize:none;line-height:1.5}
 <body>
 
 <div class="header">
-  <div class="header-info">
+  <div class="header-info" onclick="openEventList()">
     <div class="header-title" id="hTitle">催事売上</div>
-    <div class="header-sub" id="hSub">設定から催事情報を入力してください</div>
+    <div class="header-sub" id="hSub">タップして催事を切り替え</div>
   </div>
+  <button class="icon-btn" onclick="openEventList()" aria-label="催事一覧">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+  </button>
   <button class="icon-btn" onclick="openSettings()" aria-label="設定">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </button>
 </div>
 
 <div class="main">
-
-  <!-- 集計 -->
   <div class="panel active" id="panel-summary">
     <div class="summary-bar">
       <div class="s-item"><div class="s-label">下代合計</div><div class="s-value" id="totShita">¥0</div></div>
@@ -149,43 +146,23 @@ textarea{min-height:64px;resize:none;line-height:1.5}
     <div id="daySummaries"></div>
   </div>
 
-  <!-- 入力 -->
   <div class="panel" id="panel-input">
     <div class="card">
       <div class="card-title">新規明細入力</div>
-
-      <!-- 顧客情報 -->
       <div class="field"><label>日付<span class="req">*</span></label><div class="day-sel" id="daySelector"></div></div>
       <div class="row2">
         <div class="field"><label>担当</label><input id="f_tanto" type="text" placeholder="担当者名" autocomplete="off"></div>
         <div class="field"><label>お客様名<span class="req">*</span></label><input id="f_customer" type="text" placeholder="お客様名" autocomplete="off"></div>
       </div>
       <div class="field"><label>税込表地上代（合計）</label><input id="f_hyoji" type="number" placeholder="0" inputmode="numeric"></div>
-
       <div class="divider"></div>
-
-      <!-- 商品リスト -->
       <div class="sec-label">商品明細</div>
       <div id="itemRows"></div>
       <button class="btn-add-item" onclick="addItemRow()">＋ 商品を追加</button>
-
-      <div class="divider"></div>
-
-      <div class="field"><label>備考</label><textarea id="f_biko" placeholder="メモ・特記事項"></textarea></div>
-      <div class="field">
-        <label>写真メモ</label>
-        <div class="photo-area" id="photoArea">
-          <label class="photo-add" for="photoInput">
-            <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>写真
-          </label>
-          <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotos(this,'new')">
-        </div>
-      </div>
       <button class="btn btn-primary" onclick="submitEntry()">追加する</button>
     </div>
   </div>
 
-  <!-- 一覧 -->
   <div class="panel" id="panel-list">
     <div class="search-wrap">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -194,7 +171,6 @@ textarea{min-height:64px;resize:none;line-height:1.5}
     <div id="entryList"></div>
   </div>
 
-  <!-- 共有 -->
   <div class="panel" id="panel-share">
     <div class="card">
       <div class="card-title">共有・書き出し</div>
@@ -212,7 +188,7 @@ textarea{min-height:64px;resize:none;line-height:1.5}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>テキストコピー
         </button>
       </div>
-      <button class="btn btn-gray" style="font-size:13px;padding:11px" onclick="if(confirm('全データを削除しますか？'))clearAll()">全データを削除</button>
+      <button class="btn btn-gray" style="font-size:13px;padding:11px" onclick="if(confirm('この催事のデータをすべて削除しますか？'))clearAll()">この催事のデータを削除</button>
     </div>
     <div class="card">
       <div class="card-title">集計テキスト</div>
@@ -236,11 +212,21 @@ textarea{min-height:64px;resize:none;line-height:1.5}
   </button>
 </nav>
 
-<!-- 設定モーダル -->
+<!-- 催事一覧モーダル -->
+<div class="overlay hidden" id="eventListModal" onclick="if(event.target===this)closeEventList()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeEventList()">✕</button>
+    <h2>催事を選択</h2>
+    <div id="eventListContent"></div>
+    <button class="btn btn-primary" onclick="openNewEvent()" style="margin-top:8px">＋ 新しい催事を追加</button>
+  </div>
+</div>
+
+<!-- 新規催事 / 設定モーダル -->
 <div class="overlay hidden" id="settingsModal" onclick="if(event.target===this)closeSettings()">
   <div class="modal">
     <button class="modal-close" onclick="closeSettings()">✕</button>
-    <h2>催事情報の設定</h2>
+    <h2 id="settingsTitle">催事情報の設定</h2>
     <div class="field"><label>催事名</label><input id="s_name" type="text" placeholder="例：春の催事"></div>
     <div class="field"><label>お店の名前</label><input id="s_store" type="text" placeholder="例：○○百貨店"></div>
     <div class="field"><label>開始日</label><input id="s_date" type="date"></div>
@@ -271,17 +257,6 @@ textarea{min-height:64px;resize:none;line-height:1.5}
     <div class="sec-label">商品明細</div>
     <div id="editItemRows"></div>
     <button class="btn-add-item" onclick="addEditItemRow()">＋ 商品を追加</button>
-    <div class="divider"></div>
-    <div class="field"><label>備考</label><textarea id="e_biko"></textarea></div>
-    <div class="field">
-      <label>写真メモ</label>
-      <div class="photo-area" id="editPhotoArea">
-        <label class="photo-add" for="editPhotoInput">
-          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>追加
-        </label>
-        <input type="file" id="editPhotoInput" accept="image/*" multiple style="display:none" onchange="handlePhotos(this,'edit')">
-      </div>
-    </div>
     <button class="btn btn-primary" onclick="saveEdit()" style="margin-top:6px">保存する</button>
   </div>
 </div>
@@ -289,16 +264,19 @@ textarea{min-height:64px;resize:none;line-height:1.5}
 <div class="toast" id="toast"></div>
 
 <script>
-const KEY='saiji_v5';
-let db={eventName:'',storeName:'',startDate:'',days:4,entries:[]};
-let selDay=1,editSelDay=1,newPhotos=[],editPhotos=[];
-let editItemCount=0;
+const KEY='saiji_v6';
+// db = { activeId, events: [{id,name,storeName,startDate,days,entries:[]}] }
+let db={activeId:null,events:[]};
+let selDay=1,editSelDay=1,editItemCount=0;
 const DC=['','d1','d2','d3','d4','d5','d6','d7'];
 const BC=['','badge-d1','badge-d2','badge-d3','badge-d4','badge-d5','badge-d6','badge-d7'];
 
 function load(){try{const s=localStorage.getItem(KEY);if(s)db=JSON.parse(s);}catch(e){}}
 function save(){localStorage.setItem(KEY,JSON.stringify(db));}
-function clearAll(){db.entries=[];save();renderAll();showToast('削除しました');}
+
+function activeEvent(){return db.events.find(e=>e.id===db.activeId)||null;}
+function entries(){return activeEvent()?.entries||[];}
+function clearAll(){const ev=activeEvent();if(ev){ev.entries=[];save();renderAll();showToast('削除しました');}}
 
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
@@ -309,9 +287,90 @@ function switchTab(n,el){
   if(n==='list')renderList();if(n==='summary')renderSummary();if(n==='share')renderShare();
 }
 
+// ── 催事管理
+function openEventList(){
+  const content=document.getElementById('eventListContent');
+  if(!db.events.length){
+    content.innerHTML='<div class="empty"><p>まだ催事がありません</p></div>';
+  } else {
+    content.innerHTML=db.events.map(ev=>`
+      <div class="event-card${ev.id===db.activeId?' active-event':''}" onclick="switchEvent(${ev.id})">
+        <div class="event-card-info">
+          <div class="event-card-name">${ev.name||'（名前なし）'}${ev.storeName?' — '+ev.storeName:''}</div>
+          <div class="event-card-sub">${ev.startDate||'日付未設定'} / ${ev.days||4}日間 / ${ev.entries.length}件</div>
+        </div>
+        ${ev.id===db.activeId?'<div class="event-card-check">✓</div>':''}
+        <button class="event-card-del" onclick="event.stopPropagation();deleteEvent(${ev.id})">🗑</button>
+      </div>
+    `).join('');
+  }
+  document.getElementById('eventListModal').classList.remove('hidden');
+}
+function closeEventList(){document.getElementById('eventListModal').classList.add('hidden');}
+
+function switchEvent(id){
+  db.activeId=id;save();closeEventList();
+  selDay=1;buildDaySel('daySelector',selDay,d=>selDay=d);
+  updateHeader();renderAll();showToast('催事を切り替えました');
+}
+
+function deleteEvent(id){
+  const ev=db.events.find(e=>e.id===id);
+  if(!confirm(`「${ev?.name||'この催事'}」を削除しますか？データも全て消えます。`))return;
+  db.events=db.events.filter(e=>e.id!==id);
+  if(db.activeId===id)db.activeId=db.events[0]?.id||null;
+  save();openEventList();updateHeader();renderAll();
+}
+
+function openNewEvent(){
+  closeEventList();
+  document.getElementById('settingsTitle').textContent='新しい催事を追加';
+  document.getElementById('s_name').value='';
+  document.getElementById('s_store').value='';
+  document.getElementById('s_date').value='';
+  document.getElementById('s_days').value='4';
+  document.getElementById('settingsModal').dataset.mode='new';
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
+
+function openSettings(){
+  const ev=activeEvent();
+  document.getElementById('settingsTitle').textContent='催事情報の設定';
+  document.getElementById('s_name').value=ev?.name||'';
+  document.getElementById('s_store').value=ev?.storeName||'';
+  document.getElementById('s_date').value=ev?.startDate||'';
+  document.getElementById('s_days').value=ev?.days||4;
+  document.getElementById('settingsModal').dataset.mode='edit';
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
+function closeSettings(){document.getElementById('settingsModal').classList.add('hidden');}
+function saveSettings(){
+  const name=document.getElementById('s_name').value.trim();
+  const storeName=document.getElementById('s_store').value.trim();
+  const startDate=document.getElementById('s_date').value;
+  const days=parseInt(document.getElementById('s_days').value)||4;
+  const mode=document.getElementById('settingsModal').dataset.mode;
+  if(mode==='new'){
+    const newEv={id:Date.now(),name,storeName,startDate,days,entries:[]};
+    db.events.push(newEv);db.activeId=newEv.id;
+  } else {
+    const ev=activeEvent();
+    if(ev){ev.name=name;ev.storeName=storeName;ev.startDate=startDate;ev.days=days;}
+  }
+  save();updateHeader();buildDaySel('daySelector',selDay,d=>selDay=d);closeSettings();renderAll();showToast('保存しました');
+}
+
+function updateHeader(){
+  const ev=activeEvent();
+  document.getElementById('hTitle').textContent=ev?(ev.name||'催事売上')+(ev.storeName?' — '+ev.storeName:''):'催事売上';
+  document.getElementById('hSub').textContent=ev?(ev.startDate||'日付未設定')+' / '+(ev.days||4)+'日間':'タップして催事を選択・追加';
+}
+
+// ── Day selector
 function buildDaySel(cId,cur,setter){
+  const ev=activeEvent();const days=ev?.days||4;
   const c=document.getElementById(cId);c.innerHTML='';
-  for(let i=1;i<=(db.days||4);i++){
+  for(let i=1;i<=days;i++){
     const b=document.createElement('button');b.type='button';
     b.className='day-btn'+(i===cur?' active':'');b.dataset.day=i;b.textContent=i+'日目';
     b.onclick=(d=>()=>{setter(d);c.querySelectorAll('.day-btn').forEach(x=>x.classList.toggle('active',+x.dataset.day===d));})(i);
@@ -319,13 +378,11 @@ function buildDaySel(cId,cur,setter){
   }
 }
 
-// ── 商品行（入力フォーム用）
+// ── 商品行（入力）
 let itemCount=0;
 function addItemRow(init){
-  itemCount++;
-  const n=itemCount;
-  const div=document.createElement('div');
-  div.className='item-row';div.id='item-'+n;
+  itemCount++;const n=itemCount;
+  const div=document.createElement('div');div.className='item-row';div.id='item-'+n;
   div.innerHTML=`
     <div class="item-num">商品 ${n}</div>
     ${n>1?`<button class="btn-remove-item" onclick="removeItemRow(${n})">✕</button>`:''}
@@ -334,9 +391,10 @@ function addItemRow(init){
       <div class="field"><label>単品番号</label><input id="i_bango_${n}" type="text" placeholder="品番" autocomplete="off"></div>
     </div>
     <div class="row2">
-      <div class="field"><label>下代</label><input id="i_shita_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateItemMashi(${n})"></div>
-      <div class="field"><label>竹（定価）</label><input id="i_take_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateItemMashi(${n})"></div>
+      <div class="field"><label>下代</label><input id="i_shita_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateItemMashi(${n},'i_')"></div>
+      <div class="field"><label>竹（定価）</label><input id="i_take_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateItemMashi(${n},'i_')"></div>
     </div>
+    <div class="field"><label>備考</label><input id="i_biko_${n}" type="text" placeholder="この商品へのメモ" autocomplete="off"></div>
     <div id="i_mashi_${n}"></div>
   `;
   if(init){
@@ -344,48 +402,18 @@ function addItemRow(init){
     div.querySelector(`#i_bango_${n}`).value=init.bango||'';
     div.querySelector(`#i_shita_${n}`).value=init.shita||'';
     div.querySelector(`#i_take_${n}`).value=init.take!=null?init.take:'';
-    updateItemMashi(n);
+    div.querySelector(`#i_biko_${n}`).value=init.biko||'';
+    updateItemMashi(n,'i_');
   }
   document.getElementById('itemRows').appendChild(div);
   updateItemNums('itemRows');
 }
 function removeItemRow(n){document.getElementById('item-'+n).remove();updateItemNums('itemRows');}
-function updateItemNums(containerId){
-  document.querySelectorAll('#'+containerId+' .item-row').forEach((el,i)=>{
-    el.querySelector('.item-num').textContent='商品 '+(i+1);
-  });
-}
-function updateItemMashi(n){
-  const s=parseFloat(document.getElementById('i_shita_'+n)?.value)||null;
-  const t=parseFloat(document.getElementById('i_take_'+n)?.value)||null;
-  const el=document.getElementById('i_mashi_'+n);
-  if(!el)return;
-  if(s!==null&&t!==null){const m=s-t;el.innerHTML=`<span class="item-mashi ${m<0?'neg':'pos'}">マシ ¥${m.toLocaleString()}</span>`;}
-  else{el.innerHTML='';}
-}
-function getItemRows(containerId){
-  const rows=[];
-  document.querySelectorAll('#'+containerId+' .item-row').forEach(el=>{
-    const n=el.id.replace('item-','');
-    const prefix=containerId==='itemRows'?'i_':'ei_';
-    const shita=parseFloat(document.getElementById(prefix+'shita_'+n)?.value)||0;
-    const take=document.getElementById(prefix+'take_'+n)?.value!==''?parseFloat(document.getElementById(prefix+'take_'+n)?.value):null;
-    rows.push({
-      hinmei:document.getElementById(prefix+'hinmei_'+n)?.value.trim()||'',
-      bango:document.getElementById(prefix+'bango_'+n)?.value.trim()||'',
-      shita,take,
-      mashi:(shita&&take!==null)?shita-take:null
-    });
-  });
-  return rows;
-}
 
-// ── 編集モーダル用商品行
+// ── 商品行（編集）
 function addEditItemRow(init){
-  editItemCount++;
-  const n=editItemCount;
-  const div=document.createElement('div');
-  div.className='item-row';div.id='item-'+n;
+  editItemCount++;const n=editItemCount;
+  const div=document.createElement('div');div.className='item-row';div.id='item-'+n;
   div.innerHTML=`
     <div class="item-num">商品 ${n}</div>
     <button class="btn-remove-item" onclick="removeEditItemRow(${n})">✕</button>
@@ -394,9 +422,10 @@ function addEditItemRow(init){
       <div class="field"><label>単品番号</label><input id="ei_bango_${n}" type="text" placeholder="品番" autocomplete="off"></div>
     </div>
     <div class="row2">
-      <div class="field"><label>下代</label><input id="ei_shita_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateEditItemMashi(${n})"></div>
-      <div class="field"><label>竹（定価）</label><input id="ei_take_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateEditItemMashi(${n})"></div>
+      <div class="field"><label>下代</label><input id="ei_shita_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateItemMashi(${n},'ei_')"></div>
+      <div class="field"><label>竹（定価）</label><input id="ei_take_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateItemMashi(${n},'ei_')"></div>
     </div>
+    <div class="field"><label>備考</label><input id="ei_biko_${n}" type="text" placeholder="この商品へのメモ" autocomplete="off"></div>
     <div id="ei_mashi_${n}"></div>
   `;
   if(init){
@@ -404,128 +433,108 @@ function addEditItemRow(init){
     div.querySelector(`#ei_bango_${n}`).value=init.bango||'';
     div.querySelector(`#ei_shita_${n}`).value=init.shita||'';
     div.querySelector(`#ei_take_${n}`).value=init.take!=null?init.take:'';
-    updateEditItemMashi(n);
+    div.querySelector(`#ei_biko_${n}`).value=init.biko||'';
+    updateItemMashi(n,'ei_');
   }
   document.getElementById('editItemRows').appendChild(div);
   updateItemNums('editItemRows');
 }
 function removeEditItemRow(n){document.getElementById('item-'+n).remove();updateItemNums('editItemRows');}
-function updateEditItemMashi(n){
-  const s=parseFloat(document.getElementById('ei_shita_'+n)?.value)||null;
-  const t=parseFloat(document.getElementById('ei_take_'+n)?.value)||null;
-  const el=document.getElementById('ei_mashi_'+n);
+
+function updateItemNums(cId){
+  document.querySelectorAll('#'+cId+' .item-row').forEach((el,i)=>el.querySelector('.item-num').textContent='商品 '+(i+1));
+}
+function updateItemMashi(n,pfx){
+  const s=parseFloat(document.getElementById(pfx+'shita_'+n)?.value)||null;
+  const t=parseFloat(document.getElementById(pfx+'take_'+n)?.value)||null;
+  const el=document.getElementById(pfx+'mashi_'+n);
   if(!el)return;
   if(s!==null&&t!==null){const m=s-t;el.innerHTML=`<span class="item-mashi ${m<0?'neg':'pos'}">マシ ¥${m.toLocaleString()}</span>`;}
-  else{el.innerHTML='';}
+  else el.innerHTML='';
 }
-function getEditItemRows(){
+function collectItems(cId,pfx){
   const rows=[];
-  document.querySelectorAll('#editItemRows .item-row').forEach(el=>{
+  document.querySelectorAll('#'+cId+' .item-row').forEach(el=>{
     const n=el.id.replace('item-','');
-    const shita=parseFloat(document.getElementById('ei_shita_'+n)?.value)||0;
-    const take=document.getElementById('ei_take_'+n)?.value!==''?parseFloat(document.getElementById('ei_take_'+n)?.value):null;
+    const shita=parseFloat(document.getElementById(pfx+'shita_'+n)?.value)||0;
+    const take=document.getElementById(pfx+'take_'+n)?.value!==''?parseFloat(document.getElementById(pfx+'take_'+n)?.value):null;
     rows.push({
-      hinmei:document.getElementById('ei_hinmei_'+n)?.value.trim()||'',
-      bango:document.getElementById('ei_bango_'+n)?.value.trim()||'',
-      shita,take,
-      mashi:(shita&&take!==null)?shita-take:null
+      hinmei:document.getElementById(pfx+'hinmei_'+n)?.value.trim()||'',
+      bango:document.getElementById(pfx+'bango_'+n)?.value.trim()||'',
+      shita,take,mashi:(shita&&take!==null)?shita-take:null,
+      biko:document.getElementById(pfx+'biko_'+n)?.value.trim()||''
     });
   });
   return rows;
 }
 
-// ── 写真
-function handlePhotos(input,mode){
-  const arr=mode==='edit'?editPhotos:newPhotos;
-  Array.from(input.files).forEach(f=>{
-    const r=new FileReader();r.onload=e=>{arr.push(e.target.result);renderPhotoArea(mode);};r.readAsDataURL(f);
-  });
-  input.value='';
-}
-function renderPhotoArea(mode){
-  const areaId=mode==='edit'?'editPhotoArea':'photoArea';
-  const arr=mode==='edit'?editPhotos:newPhotos;
-  const area=document.getElementById(areaId);const lbl=area.querySelector('label');area.innerHTML='';
-  arr.forEach((url,i)=>{
-    const img=document.createElement('img');img.src=url;img.className='photo-thumb';img.title='タップで削除';
-    img.onclick=()=>{arr.splice(i,1);renderPhotoArea(mode);};area.appendChild(img);
-  });
-  area.appendChild(lbl);
-}
-
 // ── 追加
 function submitEntry(){
+  const ev=activeEvent();
+  if(!ev){showToast('先に催事を設定してください');openEventList();return;}
   const customer=document.getElementById('f_customer').value.trim();
   if(!customer){showToast('お客様名を入力してください');return;}
-  const items=getItemRows('itemRows');
-  if(!items.length||items.every(it=>!it.hinmei&&!it.shita)){showToast('商品を1つ以上入力してください');return;}
-  db.entries.push({
+  const items=collectItems('itemRows','i_');
+  if(!items.length){showToast('商品を1つ以上入力してください');return;}
+  ev.entries.push({
     id:Date.now(),day:selDay,cancelled:false,
-    tanto:document.getElementById('f_tanto').value.trim(),
-    customer,
+    tanto:document.getElementById('f_tanto').value.trim(),customer,
     hyoji:document.getElementById('f_hyoji').value!==''?parseFloat(document.getElementById('f_hyoji').value):null,
-    items,
-    biko:document.getElementById('f_biko').value.trim(),
-    photos:[...newPhotos]
+    items
   });
   save();
-  // reset
-  ['f_tanto','f_customer','f_hyoji','f_biko'].forEach(id=>document.getElementById(id).value='');
+  ['f_tanto','f_customer','f_hyoji'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('itemRows').innerHTML='';itemCount=0;addItemRow();
-  newPhotos=[];renderPhotoArea('new');
   renderSummary();showToast('追加しました ✓');
 }
 
 // ── 編集
 function openEdit(id){
-  const e=db.entries.find(x=>x.id===id);if(!e)return;
+  const e=entries().find(x=>x.id===id);if(!e)return;
   editSelDay=e.day;editItemCount=0;
   document.getElementById('e_id').value=id;
   document.getElementById('e_tanto').value=e.tanto||'';
   document.getElementById('e_customer').value=e.customer||'';
   document.getElementById('e_hyoji').value=e.hyoji!=null?e.hyoji:'';
-  document.getElementById('e_biko').value=e.biko||'';
   document.getElementById('editItemRows').innerHTML='';
   (e.items||[]).forEach(it=>addEditItemRow(it));
-  if(!e.items||!e.items.length)addEditItemRow();
-  editPhotos=[...(e.photos||[])];
+  if(!(e.items||[]).length)addEditItemRow();
   buildDaySel('editDaySel',editSelDay,d=>editSelDay=d);
-  renderPhotoArea('edit');
   document.getElementById('editModal').classList.remove('hidden');
 }
 function closeEdit(){document.getElementById('editModal').classList.add('hidden');}
 function saveEdit(){
   const id=parseInt(document.getElementById('e_id').value);
-  const e=db.entries.find(x=>x.id===id);if(!e)return;
+  const e=entries().find(x=>x.id===id);if(!e)return;
   const customer=document.getElementById('e_customer').value.trim();
   if(!customer){showToast('お客様名を入力してください');return;}
   e.day=editSelDay;e.tanto=document.getElementById('e_tanto').value.trim();e.customer=customer;
   e.hyoji=document.getElementById('e_hyoji').value!==''?parseFloat(document.getElementById('e_hyoji').value):null;
-  e.items=getEditItemRows();
-  e.biko=document.getElementById('e_biko').value.trim();
-  e.photos=[...editPhotos];
+  e.items=collectItems('editItemRows','ei_');
   save();closeEdit();renderList();renderSummary();showToast('編集しました');
 }
 
 function toggleCancel(id){
-  const e=db.entries.find(x=>x.id===id);if(!e)return;
+  const e=entries().find(x=>x.id===id);if(!e)return;
   e.cancelled=!e.cancelled;save();renderList();renderSummary();
   showToast(e.cancelled?'キャンセルにしました':'キャンセルを解除しました');
 }
 function deleteEntry(id){
   if(!confirm('この明細を削除しますか？'))return;
-  db.entries=db.entries.filter(e=>e.id!==id);save();renderList();renderSummary();
+  const ev=activeEvent();if(!ev)return;
+  ev.entries=ev.entries.filter(e=>e.id!==id);save();renderList();renderSummary();
 }
 
 // ── ヘルパー
 function fmt(n){return n!=null?'¥'+Math.round(n).toLocaleString():'—';}
 function dayLabel(d){
-  if(!db.startDate)return d+'日目';
-  const dt=new Date(db.startDate);dt.setDate(dt.getDate()+d-1);
+  const ev=activeEvent();
+  if(!ev?.startDate)return d+'日目';
+  const dt=new Date(ev.startDate);dt.setDate(dt.getDate()+d-1);
   const w=['日','月','火','水','木','金','土'][dt.getDay()];
   return d+'日目（'+(dt.getMonth()+1)+'/'+dt.getDate()+'・'+w+'）';
 }
-function activeEntries(){return db.entries.filter(e=>!e.cancelled);}
+function activeEntries(){return entries().filter(e=>!e.cancelled);}
 function entryShita(e){return(e.items||[]).reduce((a,it)=>a+(it.shita||0),0);}
 function entryTake(e){return(e.items||[]).reduce((a,it)=>a+(it.take||0),0);}
 function entryMashi(e){return(e.items||[]).reduce((a,it)=>a+(it.mashi!=null?it.mashi:0),0);}
@@ -539,38 +548,42 @@ function renderSummary(){
   document.getElementById('totShita').textContent=fmt(ts);
   document.getElementById('totTake').textContent=fmt(tt);
   const tmEl=document.getElementById('totMashi');tmEl.textContent=fmt(tm);tmEl.style.color=tm<0?'#FCA5A5':'#fff';
+  const ev=activeEvent();const days=ev?.days||4;
   let html='';
-  for(let d=1;d<=(db.days||4);d++){
-    const all=db.entries.filter(e=>e.day===d);
+  for(let d=1;d<=days;d++){
+    const all=entries().filter(e=>e.day===d);
     const act=all.filter(e=>!e.cancelled);
     const s=act.reduce((a,e)=>a+entryShita(e),0);
     const tk=act.reduce((a,e)=>a+entryTake(e),0);
     const m=act.reduce((a,e)=>a+entryMashi(e),0);
     const cc=all.filter(e=>e.cancelled).length;
     html+=`<div class="day-card"><div class="day-hd ${DC[d]}"><span>${dayLabel(d)}${cc?` <span style="font-size:11px;font-weight:400;color:var(--hint)">（キャンセル${cc}件）</span>`:''}</span><span class="day-total">${fmt(s)}</span></div>`;
-    if(!act.length&&!cc){html+='<div style="padding:10px 14px;font-size:13px;color:var(--hint)">明細なし</div>';}
-    else{html+=`<div style="padding:8px 14px"><div class="erow"><span class="l">取引件数</span><span class="v">${act.length}件</span></div><div class="erow"><span class="l">下代合計</span><span class="v">${fmt(s)}</span></div><div class="erow"><span class="l">竹合計</span><span class="v">${fmt(tk)}</span></div><div class="erow"><span class="l">マシ合計</span><span class="v ${m<0?'neg':''}">${fmt(m)}</span></div></div>`;}
+    if(!act.length&&!cc)html+='<div style="padding:10px 14px;font-size:13px;color:var(--hint)">明細なし</div>';
+    else html+=`<div style="padding:8px 14px"><div class="erow"><span class="l">取引件数</span><span class="v">${act.length}件</span></div><div class="erow"><span class="l">下代合計</span><span class="v">${fmt(s)}</span></div><div class="erow"><span class="l">竹合計</span><span class="v">${fmt(tk)}</span></div><div class="erow"><span class="l">マシ合計</span><span class="v ${m<0?'neg':''}">${fmt(m)}</span></div></div>`;
     html+='</div>';
   }
+  if(!ev)html='<div class="empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><p>ヘッダーをタップして催事を追加してください</p></div>';
   document.getElementById('daySummaries').innerHTML=html;
 }
 
 // ── 一覧
 function renderList(){
   const q=(document.getElementById('searchInput').value||'').trim().toLowerCase();
-  let es=[...db.entries].reverse();
+  let es=[...entries()].reverse();
   if(q)es=es.filter(e=>(e.tanto||'').toLowerCase().includes(q)||(e.customer||'').toLowerCase().includes(q)||
     (e.items||[]).some(it=>(it.hinmei||'').toLowerCase().includes(q)));
   const el=document.getElementById('entryList');
   if(!es.length){el.innerHTML=`<div class="empty"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>${q?'一致する明細がありません':'まだ明細がありません'}</p></div>`;return;}
   el.innerHTML=es.map(e=>{
-    const cl=e.cancelled?' cline':'';
     const shita=entryShita(e);const mashi=entryMashi(e);
     const itemsHtml=(e.items||[]).map(it=>{
-      const mashiColor=it.mashi!=null?(it.mashi<0?'color:var(--red)':'color:var(--green)'):'';
+      const mc=it.mashi!=null?(it.mashi<0?'color:var(--red)':'color:var(--green)'):'';
       return`<div class="ecard-item">
-        <span class="item-name">${it.hinmei||'（品名なし）'}${it.bango?' <span style="color:var(--hint);font-size:11px;">'+it.bango+'</span>':''}</span>
-        <span class="item-vals">下代 ${fmt(it.shita)}${it.take!=null?' / 竹 '+fmt(it.take):''}${it.mashi!=null?`<span class="item-mashi-small" style="${mashiColor}"> マシ ${fmt(it.mashi)}</span>`:''}</span>
+        <div class="ecard-item-main">
+          <span class="item-name">${it.hinmei||'（品名なし）'}${it.bango?` <span style="color:var(--hint);font-size:11px;">${it.bango}</span>`:''}</span>
+          <span class="item-vals">下代 ${fmt(it.shita)}${it.take!=null?' / 竹 '+fmt(it.take):''}${it.mashi!=null?`<span class="item-mashi-small" style="${mc}"> マシ ${fmt(it.mashi)}</span>`:''}</span>
+        </div>
+        ${it.biko?`<div class="item-biko">📝 ${it.biko}</div>`:''}
       </div>`;
     }).join('');
     return`<div class="ecard${e.cancelled?' cancelled':''}">
@@ -579,12 +592,10 @@ function renderList(){
         <div class="ecard-badges">${e.cancelled?'<span class="badge badge-cancel">キャンセル</span>':''}<span class="badge ${BC[e.day]}">${e.day}日目</span></div>
       </div>
       <div class="ecard-body">
-        ${e.hyoji!=null?`<div class="erow"><span class="l">税込表地上代</span><span class="v${cl}">${fmt(e.hyoji)}</span></div>`:''}
+        ${e.hyoji!=null?`<div class="erow"><span class="l">税込表地上代</span><span class="v">${fmt(e.hyoji)}</span></div>`:''}
         <div class="ecard-items">${itemsHtml}</div>
-        <div class="erow" style="margin-top:4px"><span class="l">下代 小計</span><span class="v${cl} ${e.cancelled?'':''}"><b>${fmt(shita)}</b></span></div>
-        <div class="erow"><span class="l">マシ 小計</span><span class="v ${mashi<0?'neg':'pos'}${cl}"><b>${fmt(mashi)}</b></span></div>
-        ${e.biko?`<div class="erow"><span class="l">備考</span><span class="v">${e.biko}</span></div>`:''}
-        ${e.photos&&e.photos.length?`<div style="display:flex;gap:6px;margin-top:6px">${e.photos.map(p=>`<img src="${p}" style="width:54px;height:54px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">`).join('')}</div>`:''}
+        <div class="erow" style="margin-top:4px"><span class="l">下代 小計</span><span class="v"><b>${fmt(shita)}</b></span></div>
+        <div class="erow"><span class="l">マシ 小計</span><span class="v ${mashi<0?'neg':'pos'}"><b>${fmt(mashi)}</b></span></div>
       </div>
       <div class="ecard-foot">
         <button class="btn-edit" onclick="openEdit(${e.id})">編集</button>
@@ -597,21 +608,21 @@ function renderList(){
 
 // ── テキスト生成
 function buildText(){
-  const days=db.days||4;
-  const store=db.storeName?` @ ${db.storeName}`:'';
-  const lines=[`【${db.eventName||'催事'}${store}】売上集計`];
-  if(db.startDate)lines.push(`開始日：${db.startDate}`);
+  const ev=activeEvent();if(!ev)return '催事が選択されていません';
+  const days=ev.days||4;
+  const store=ev.storeName?` @ ${ev.storeName}`:'';
+  const lines=[`【${ev.name||'催事'}${store}】売上集計`];
+  if(ev.startDate)lines.push(`開始日：${ev.startDate}`);
   lines.push('');
   for(let d=1;d<=days;d++){
-    const act=db.entries.filter(e=>e.day===d&&!e.cancelled);
-    const can=db.entries.filter(e=>e.day===d&&e.cancelled);
+    const act=entries().filter(e=>e.day===d&&!e.cancelled);
+    const can=entries().filter(e=>e.day===d&&e.cancelled);
     if(!act.length&&!can.length)continue;
     lines.push(`▼ ${dayLabel(d)}`);
     act.forEach(e=>{
-      const shita=entryShita(e);const mashi=entryMashi(e);
       lines.push(`  ${e.customer}`);
-      (e.items||[]).forEach(it=>lines.push(`    ${it.hinmei||'－'} 下代:${fmt(it.shita)}${it.mashi!=null?' マシ:'+fmt(it.mashi):''}`));
-      lines.push(`    → 小計 下代:${fmt(shita)} マシ:${fmt(mashi)}`);
+      (e.items||[]).forEach(it=>lines.push(`    ${it.hinmei||'－'} 下代:${fmt(it.shita)}${it.mashi!=null?' マシ:'+fmt(it.mashi):''}${it.biko?' ('+it.biko+')':''}`));
+      lines.push(`    → 小計 下代:${fmt(entryShita(e))} マシ:${fmt(entryMashi(e))}`);
     });
     if(can.length)lines.push(`  ※キャンセル ${can.length}件`);
     const s=act.reduce((a,e)=>a+entryShita(e),0);
@@ -627,54 +638,59 @@ function buildText(){
 
 function renderShare(){document.getElementById('shareText').textContent=buildText();}
 function shareLine(){window.open('https://line.me/R/msg/text/?'+encodeURIComponent(buildText()));}
-function shareMail(){window.location.href='mailto:?subject='+encodeURIComponent((db.eventName||'催事')+' 売上集計')+'&body='+encodeURIComponent(buildText());}
+function shareMail(){const ev=activeEvent();window.location.href='mailto:?subject='+encodeURIComponent((ev?.name||'催事')+' 売上集計')+'&body='+encodeURIComponent(buildText());}
 function copyText(){const t=buildText();if(navigator.clipboard){navigator.clipboard.writeText(t).then(()=>showToast('コピーしました'));}else{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a);showToast('コピーしました');}}
 
 function exportCSV(){
+  const ev=activeEvent();if(!ev){showToast('催事を選択してください');return;}
   const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
   const ae=activeEntries();
   const ts=ae.reduce((a,e)=>a+entryShita(e),0);
   const tt=ae.reduce((a,e)=>a+entryTake(e),0);
   const tm=ae.reduce((a,e)=>a+entryMashi(e),0);
   const info=[
-    [q('催事名'),q(db.eventName||'')],[q('店舗名'),q(db.storeName||'')],
-    [q('開始日'),q(db.startDate||'')],[q('日数'),q((db.days||4)+'日間')],[],
+    [q('催事名'),q(ev.name||'')],[q('店舗名'),q(ev.storeName||'')],
+    [q('開始日'),q(ev.startDate||'')],[q('日数'),q((ev.days||4)+'日間')],[],
     [q('催事合計（下代）'),q(fmt(ts))],[q('催事合計（竹）'),q(fmt(tt))],[q('催事合計（マシ）'),q(fmt(tm))],[],
-    ['日付','担当','お客様名','税込表地上代','品名','単品番号','下代','竹','マシ','キャンセル','備考'].map(q)
+    ['日付','担当','お客様名','税込表地上代','品名','単品番号','下代','竹','マシ','備考','キャンセル'].map(q)
   ];
   const rows=[];
-  db.entries.forEach(e=>{
-    (e.items||[]).forEach(it=>{
-      rows.push([dayLabel(e.day),e.tanto,e.customer,e.hyoji??'',it.hinmei,it.bango,it.shita??'',it.take??'',it.mashi??'',e.cancelled?'キャンセル':'',e.biko].map(q));
+  entries().forEach(e=>{
+    (e.items||[]).forEach((it,i)=>{
+      // 同じお客様の2行目以降は顧客情報を空欄にして結合風に
+      const isFirst=i===0;
+      rows.push([
+        isFirst?dayLabel(e.day):'',
+        isFirst?(e.tanto||''):'',
+        isFirst?e.customer:'',
+        isFirst?(e.hyoji!=null?e.hyoji:''):'',
+        it.hinmei,it.bango,it.shita??'',it.take??'',it.mashi??'',it.biko,
+        isFirst?(e.cancelled?'キャンセル':''):''
+      ].map(q));
     });
   });
   const csv='﻿'+[...info,...rows].map(r=>r.join(',')).join('\r\n');
   const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
-  const a=document.createElement('a');a.href=url;a.download=(db.eventName||'催事')+'_売上.csv';a.click();URL.revokeObjectURL(url);showToast('CSVを出力しました');
+  const a=document.createElement('a');a.href=url;a.download=(ev.name||'催事')+'_売上.csv';a.click();URL.revokeObjectURL(url);showToast('CSVを出力しました');
 }
 
-function updateHeader(){
-  document.getElementById('hTitle').textContent=(db.eventName||'催事売上')+(db.storeName?' — '+db.storeName:'');
-  document.getElementById('hSub').textContent=db.startDate?`${db.startDate} / ${db.days||4}日間`:'設定から催事情報を入力してください';
-}
-function openSettings(){
-  document.getElementById('s_name').value=db.eventName||'';document.getElementById('s_store').value=db.storeName||'';
-  document.getElementById('s_date').value=db.startDate||'';document.getElementById('s_days').value=db.days||4;
-  document.getElementById('settingsModal').classList.remove('hidden');
-}
-function closeSettings(){document.getElementById('settingsModal').classList.add('hidden');}
-function saveSettings(){
-  db.eventName=document.getElementById('s_name').value.trim();db.storeName=document.getElementById('s_store').value.trim();
-  db.startDate=document.getElementById('s_date').value;db.days=parseInt(document.getElementById('s_days').value)||4;
-  save();updateHeader();buildDaySel('daySelector',selDay,d=>selDay=d);closeSettings();renderAll();showToast('設定を保存しました');
-}
 function renderAll(){renderSummary();}
+
 function init(){
-  load();updateHeader();
-  buildDaySel('daySelector',selDay,d=>selDay=d);
-  addItemRow();
-  renderPhotoArea('new');
-  renderAll();
+  load();
+  // 初回起動で催事がなければ自動でモーダルを開く
+  if(!db.events.length){
+    updateHeader();
+    buildDaySel('daySelector',selDay,d=>selDay=d);
+    addItemRow();
+    setTimeout(()=>openEventList(),300);
+  } else {
+    if(!db.activeId)db.activeId=db.events[0].id;
+    updateHeader();
+    buildDaySel('daySelector',selDay,d=>selDay=d);
+    addItemRow();
+    renderAll();
+  }
 }
 init();
 </script>
