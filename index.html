@@ -129,21 +129,25 @@ textarea{min-height:56px;resize:none;line-height:1.5}
 
 /* 印刷 */
 @media print{
-  @page{size:A4 landscape;margin:12mm 10mm}
-  .header,.tabs,.ecard-foot,.sh-btn,.btn,.btn-add-item,.no-print{display:none!important}
-  body{background:#fff;font-size:11px}
-  .main{padding:0!important}
-  .panel{display:block!important;padding:0!important}
-  #panel-input,#panel-list,#panel-share{display:none!important}
-  #panel-summary{display:block!important}
-  .summary-bar{border-radius:4px;padding:8px 12px;margin-bottom:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .s-value{font-size:14px}.s-label{font-size:9px}
-  .day-card{margin-bottom:6px;break-inside:avoid}
-  .day-hd{padding:6px 10px;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .budget-bar{margin-bottom:8px;padding:8px 12px}
-  .print-title{display:block!important;font-size:14px;font-weight:700;margin-bottom:8px}
-  .erow{padding:2px 0;font-size:11px}
-  .card{padding:10px;margin-bottom:6px}
+  @page{size:A4 landscape;margin:10mm 8mm}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  .header,.tabs,.main,.no-print{display:none!important}
+  body{background:#fff;font-size:10px;margin:0;padding:0}
+  #printDetail{display:block!important}
+  .print-title{display:block!important;font-size:13px;font-weight:700;margin-bottom:6px;color:#1F2937}
+  .pt-summary{display:flex;gap:16px;font-size:11px;margin-bottom:8px;padding:6px 8px;background:#F5F6F7;border-radius:4px}
+  .pt-summary span{font-weight:600}
+  .pt-table{width:100%;border-collapse:collapse;font-size:10px}
+  .pt-table th{background:#1F2937;color:#fff;padding:5px 6px;text-align:left;font-weight:600;white-space:nowrap}
+  .pt-table td{padding:4px 6px;border-bottom:1px solid #E2E4E7;vertical-align:top}
+  .pt-table tr:nth-child(even) td{background:#F9FAFB}
+  .pt-table .num{text-align:right;white-space:nowrap}
+  .pt-table .neg{color:#DC2626;font-weight:700}
+  .pt-table .pos{color:#16A34A}
+  .pt-table .cancelled td{color:#9CA3AF;text-decoration:line-through}
+  .pt-day-row td{background:#EBF4FB!important;font-weight:700;font-size:11px}
+  .pt-subtotal td{background:#F3F4F6!important;font-weight:700}
+  .pt-total td{background:#1F2937!important;color:#fff!important;font-weight:700}
 }
 .print-title{display:none}
 </style>
@@ -169,7 +173,7 @@ textarea{min-height:56px;resize:none;line-height:1.5}
     <div class="summary-bar">
       <div class="s-item"><div class="s-label">下代合計</div><div class="s-value" id="totShita">¥0</div></div>
       <div class="s-div"></div>
-      <div class="s-item"><div class="s-label">竹合計</div><div class="s-value" id="totTake">¥0</div></div>
+      <div class="s-item"><div class="s-label">定価合計</div><div class="s-value" id="totTake">¥0</div></div>
       <div class="s-div"></div>
       <div class="s-item"><div class="s-label">マシ合計</div><div class="s-value" id="totMashi">¥0</div></div>
     </div>
@@ -221,7 +225,7 @@ textarea{min-height:56px;resize:none;line-height:1.5}
       </div>
       <button class="sh-btn no-print" style="background:#6D28D9;color:#fff;width:100%;flex-direction:row;justify-content:center;gap:10px;margin-bottom:12px" onclick="window.print()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        横向きで印刷（集計画面）
+        全明細を横向き印刷
       </button>
       <button class="btn btn-gray" style="font-size:13px;padding:11px" onclick="if(confirm('この催事のデータをすべて削除しますか？'))clearAll()">この催事のデータを削除</button>
     </div>
@@ -298,6 +302,13 @@ textarea{min-height:56px;resize:none;line-height:1.5}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- 印刷用全明細テーブル -->
+<div id="printDetail" style="display:none">
+  <div class="print-title" id="printDetailTitle"></div>
+  <div id="printDetailContent"></div>
+</div>
+
 
 <script>
 const KEY='saiji_v6';
@@ -431,9 +442,12 @@ function addItemRow(init){
     </div>
     <div class="row2">
       <div class="field"><label>下代</label><input id="i_shita_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateItemMashi(${n},'i_')"></div>
-      <div class="field"><label>竹（定価）</label><input id="i_take_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateItemMashi(${n},'i_')"></div>
+      <div class="field"><label>定価</label><input id="i_take_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateItemMashi(${n},'i_')"></div>
     </div>
-    <div class="field"><label>備考</label><input id="i_biko_${n}" type="text" placeholder="この商品へのメモ" autocomplete="off"></div>
+    <div class="row2">
+      <div class="field"><label>cost</label><input id="i_cost_${n}" type="number" placeholder="0" inputmode="numeric"></div>
+      <div class="field"><label>備考</label><input id="i_biko_${n}" type="text" placeholder="メモ" autocomplete="off"></div>
+    </div>
     <div id="i_mashi_${n}"></div>
   `;
   if(init){
@@ -441,6 +455,7 @@ function addItemRow(init){
     div.querySelector(`#i_bango_${n}`).value=init.bango||'';
     div.querySelector(`#i_shita_${n}`).value=init.shita||'';
     div.querySelector(`#i_take_${n}`).value=init.take!=null?init.take:'';
+    div.querySelector(`#i_cost_${n}`).value=init.cost!=null?init.cost:'';
     div.querySelector(`#i_biko_${n}`).value=init.biko||'';
     updateItemMashi(n,'i_');
   }
@@ -462,9 +477,12 @@ function addEditItemRow(init){
     </div>
     <div class="row2">
       <div class="field"><label>下代</label><input id="ei_shita_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateItemMashi(${n},'ei_')"></div>
-      <div class="field"><label>竹（定価）</label><input id="ei_take_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateItemMashi(${n},'ei_')"></div>
+      <div class="field"><label>定価</label><input id="ei_take_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateItemMashi(${n},'ei_')"></div>
     </div>
-    <div class="field"><label>備考</label><input id="ei_biko_${n}" type="text" placeholder="この商品へのメモ" autocomplete="off"></div>
+    <div class="row2">
+      <div class="field"><label>cost</label><input id="ei_cost_${n}" type="number" placeholder="0" inputmode="numeric"></div>
+      <div class="field"><label>備考</label><input id="ei_biko_${n}" type="text" placeholder="メモ" autocomplete="off"></div>
+    </div>
     <div id="ei_mashi_${n}"></div>
   `;
   if(init){
@@ -472,6 +490,7 @@ function addEditItemRow(init){
     div.querySelector(`#ei_bango_${n}`).value=init.bango||'';
     div.querySelector(`#ei_shita_${n}`).value=init.shita||'';
     div.querySelector(`#ei_take_${n}`).value=init.take!=null?init.take:'';
+    div.querySelector(`#ei_cost_${n}`).value=init.cost!=null?init.cost:'';
     div.querySelector(`#ei_biko_${n}`).value=init.biko||'';
     updateItemMashi(n,'ei_');
   }
@@ -497,10 +516,12 @@ function collectItems(cId,pfx){
     const n=el.id.replace('item-','');
     const shita=parseFloat(document.getElementById(pfx+'shita_'+n)?.value)||0;
     const take=document.getElementById(pfx+'take_'+n)?.value!==''?parseFloat(document.getElementById(pfx+'take_'+n)?.value):null;
+    const costVal=document.getElementById(pfx+'cost_'+n)?.value;
     rows.push({
       hinmei:document.getElementById(pfx+'hinmei_'+n)?.value.trim()||'',
       bango:document.getElementById(pfx+'bango_'+n)?.value.trim()||'',
       shita,take,mashi:(shita&&take!==null)?shita-take:null,
+      cost:costVal!==undefined&&costVal!==''?parseFloat(costVal):null,
       biko:document.getElementById(pfx+'biko_'+n)?.value.trim()||''
     });
   });
@@ -566,6 +587,7 @@ function deleteEntry(id){
 
 // ── ヘルパー
 function fmt(n){return n!=null?'¥'+Math.round(n).toLocaleString():'—';}
+function fmtNum(n){return n!=null?Math.round(n).toLocaleString():'';}
 function dayLabel(d){
   const ev=activeEvent();
   if(!ev?.startDate)return d+'日目';
@@ -598,7 +620,7 @@ function renderSummary(){
     const cc=all.filter(e=>e.cancelled).length;
     html+=`<div class="day-card"><div class="day-hd ${DC[d]}"><span>${dayLabel(d)}${cc?` <span style="font-size:11px;font-weight:400;color:var(--hint)">（キャンセル${cc}件）</span>`:''}</span><span class="day-total">${fmt(s)}</span></div>`;
     if(!act.length&&!cc)html+='<div style="padding:10px 14px;font-size:13px;color:var(--hint)">明細なし</div>';
-    else html+=`<div style="padding:8px 14px"><div class="erow"><span class="l">取引件数</span><span class="v">${act.length}件</span></div><div class="erow"><span class="l">下代合計</span><span class="v">${fmt(s)}</span></div><div class="erow"><span class="l">竹合計</span><span class="v">${fmt(tk)}</span></div><div class="erow"><span class="l">マシ合計</span><span class="v ${m<0?'neg':''}">${fmt(m)}</span></div></div>`;
+    else html+=`<div style="padding:8px 14px"><div class="erow"><span class="l">取引件数</span><span class="v">${act.length}件</span></div><div class="erow"><span class="l">下代合計</span><span class="v">${fmt(s)}</span></div><div class="erow"><span class="l">定価合計</span><span class="v">${fmt(tk)}</span></div><div class="erow"><span class="l">マシ合計</span><span class="v ${m<0?'neg':''}">${fmt(m)}</span></div></div>`;
     html+='</div>';
   }
   if(!ev)html='<div class="empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><p>ヘッダーをタップして催事を追加してください</p></div>';
@@ -640,7 +662,7 @@ function renderList(){
       return`<div class="ecard-item">
         <div class="ecard-item-main">
           <span class="item-name">${it.hinmei||'（品名なし）'}${it.bango?` <span style="color:var(--hint);font-size:11px;">${it.bango}</span>`:''}</span>
-          <span class="item-vals">下代 ${fmt(it.shita)}${it.take!=null?' / 竹 '+fmt(it.take):''}${it.mashi!=null?`<span class="item-mashi-small" style="${mc}"> マシ ${fmt(it.mashi)}</span>`:''}</span>
+          <span class="item-vals">下代 ${fmt(it.shita)}${it.take!=null?' / 定価 '+fmt(it.take):''}${it.mashi!=null?`<span class="item-mashi-small" style="${mc}"> マシ ${fmt(it.mashi)}</span>`:''}</span>
         </div>
         ${it.biko?`<div class="item-biko">📝 ${it.biko}</div>`:''}
       </div>`;
@@ -710,8 +732,8 @@ function exportCSV(){
   const budgetInfo=ev.budget!=null?` / 予算:${fmt(ev.budget)} 達成率:${Math.round(ts/ev.budget*100)}%`:'';
   const info=[
     [q('催事名'),q(ev.name||''),q('店舗名'),q(ev.storeName||''),q('開始日'),q(ev.startDate||''),q('日数'),q((ev.days||4)+'日間')],
-    [q('下代合計'),q(fmt(ts)),q('竹合計'),q(fmt(tt)),q('マシ合計'),q(fmt(tm)),q('予算'),q(ev.budget!=null?fmt(ev.budget):'未設定'),q('達成率'),q(ev.budget!=null?Math.round(ts/ev.budget*100)+'%':'—')],
-    ['日付','担当','お客様名','税込表地上代','品名','単品番号','下代','竹','マシ','備考','キャンセル'].map(q)
+    [q('下代合計'),q(fmtNum(ts)),q('定価合計'),q(fmtNum(tt)),q('マシ合計'),q(fmtNum(tm)),q('予算'),q(ev.budget!=null?fmtNum(ev.budget):'未設定'),q('達成率'),q(ev.budget!=null?Math.round(ts/ev.budget*100)+'%':'—')],
+    ['日付','担当','お客様名','税込表地上代','品名','単品番号','下代','定価','マシ','cost','備考','キャンセル'].map(q)
   ];
   const rows=[];
   entries().forEach(e=>{
@@ -722,8 +744,13 @@ function exportCSV(){
         isFirst?dayLabel(e.day):'',
         isFirst?(e.tanto||''):'',
         isFirst?e.customer:'',
-        isFirst?(e.hyoji!=null?e.hyoji:''):'',
-        it.hinmei,it.bango,it.shita??'',it.take??'',it.mashi??'',it.biko,
+        isFirst?(e.hyoji!=null?fmtNum(e.hyoji):''):'',
+        it.hinmei,it.bango,
+        it.shita!=null?fmtNum(it.shita):'',
+        it.take!=null?fmtNum(it.take):'',
+        it.mashi!=null?fmtNum(it.mashi):'',
+        it.cost!=null?fmtNum(it.cost):'',
+        it.biko,
         isFirst?(e.cancelled?'キャンセル':''):''
       ].map(q));
     });
@@ -732,6 +759,72 @@ function exportCSV(){
   const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
   const a=document.createElement('a');a.href=url;a.download=(ev.name||'催事')+'_売上.csv';a.click();URL.revokeObjectURL(url);showToast('CSVを出力しました');
 }
+
+
+// ── 印刷用テーブル生成
+function buildPrintDetail(){
+  const ev=activeEvent();if(!ev)return;
+  const store=ev.storeName?` @ ${ev.storeName}`:'';
+  document.getElementById('printDetailTitle').textContent=(ev.name||'催事')+store+(ev.startDate?' ／ '+ev.startDate:'');
+
+  const ae=activeEntries();
+  const ts=ae.reduce((a,e)=>a+entryShita(e),0);
+  const tt=ae.reduce((a,e)=>a+entryTake(e),0);
+  const tm=ae.reduce((a,e)=>a+entryMashi(e),0);
+  const budgetPart=ev.budget!=null?`<span>予算: ${fmt(ev.budget)}</span><span>達成率: ${Math.round(ts/ev.budget*100)}%</span>`:'';
+
+  let html=`<div class="pt-summary">
+    <span>下代合計: <b>${fmt(ts)}</b></span>
+    <span>定価合計: <b>${fmt(tt)}</b></span>
+    <span>マシ合計: <b style="color:${tm<0?'#DC2626':'#16A34A'}">${fmt(tm)}</b></span>
+    ${budgetPart}
+  </div>
+  <table class="pt-table">
+    <thead><tr>
+      <th>日付</th><th>担当</th><th>お客様名</th><th>税込表地上代</th>
+      <th>品名</th><th>品番</th><th class="num">下代</th><th class="num">定価</th>
+      <th class="num">マシ</th><th class="num">cost</th><th>備考</th>
+    </tr></thead><tbody>`;
+
+  for(let d=1;d<=(ev.days||4);d++){
+    const dayEs=entries().filter(e=>e.day===d);
+    if(!dayEs.length)continue;
+    const actD=dayEs.filter(e=>!e.cancelled);
+    const ds=actD.reduce((a,e)=>a+entryShita(e),0);
+    const dm=actD.reduce((a,e)=>a+entryMashi(e),0);
+    html+=`<tr class="pt-day-row"><td colspan="11">${dayLabel(d)}　下代: ${fmt(ds)}　マシ: ${fmt(dm)}（${actD.length}件）</td></tr>`;
+    dayEs.forEach(e=>{
+      const items=e.items||[];
+      items.forEach((it,i)=>{
+        const isFirst=i===0;
+        const mc=it.mashi!=null?(it.mashi<0?' neg':' pos'):'';
+        html+=`<tr${e.cancelled?' class="cancelled"':''}>
+          <td>${isFirst?dayLabel(e.day):''}</td>
+          <td>${isFirst?(e.tanto||''):''}</td>
+          <td>${isFirst?e.customer:''}</td>
+          <td class="num">${isFirst&&e.hyoji!=null?fmt(e.hyoji):''}</td>
+          <td>${it.hinmei||''}</td>
+          <td>${it.bango||''}</td>
+          <td class="num">${it.shita?fmt(it.shita):''}</td>
+          <td class="num">${it.take!=null?fmt(it.take):''}</td>
+          <td class="num${mc}">${it.mashi!=null?fmt(it.mashi):''}</td>
+          <td class="num">${it.cost!=null?fmt(it.cost):''}</td>
+          <td>${it.biko||''}</td>
+        </tr>`;
+      });
+    });
+    html+=`<tr class="pt-subtotal"><td colspan="6" style="text-align:right">小計</td>
+      <td class="num">${fmt(ds)}</td><td class="num">${fmt(actD.reduce((a,e)=>a+entryTake(e),0))}</td>
+      <td class="num${dm<0?' neg':' pos'}">${fmt(dm)}</td><td></td><td></td></tr>`;
+  }
+  html+=`<tr class="pt-total"><td colspan="6" style="text-align:right">催事合計</td>
+    <td class="num">${fmt(ts)}</td><td class="num">${fmt(tt)}</td>
+    <td class="num">${fmt(tm)}</td><td></td><td></td></tr>`;
+  html+='</tbody></table>';
+  document.getElementById('printDetailContent').innerHTML=html;
+}
+
+window.onbeforeprint=buildPrintDetail;
 
 function renderAll(){renderSummary();}
 
