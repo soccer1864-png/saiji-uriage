@@ -867,9 +867,7 @@ function importCSV(input){
   reader.onload=e=>{
     try{
       const text=e.target.result.replace(/^﻿/,'');
-      const rows=text.split(/
-?
-/).map(r=>{
+      const rows=text.split(/\r?\n/).map(r=>{
         const cols=[];let inQ=false,cur='';
         for(let i=0;i<r.length;i++){
           const c=r[i];
