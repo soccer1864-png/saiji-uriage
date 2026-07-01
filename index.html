@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>催事売上</title>
 <style>
@@ -19,11 +19,11 @@ body{font-family:-apple-system,'Hiragino Sans',sans-serif;background:var(--bg);c
 .header-title{font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .header-sub{font-size:11px;color:#9CA3AF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .icon-btn{background:none;border:none;padding:8px;cursor:pointer;color:#D1D5DB;display:flex;align-items:center;border-radius:8px;flex-shrink:0}
-.tabs{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.tabs{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 8px)}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;cursor:pointer;color:var(--hint);font-size:10px;padding:8px 0}
 .tab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8}
 .tab.active{color:var(--accent)}
-.main{padding-top:calc(var(--safe-top) + var(--header-h) + 18px);padding-bottom:calc(var(--tab-h) + 16px)}
+.main{padding-top:calc(var(--safe-top) + var(--header-h) + 18px);padding-bottom:calc(var(--tab-h) + env(safe-area-inset-bottom, 0px) + 24px)}
 .panel{display:none;padding:12px 14px}.panel.active{display:block}
 
 .summary-bar{background:var(--dark);color:#fff;border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;display:flex;gap:4px}
@@ -425,33 +425,11 @@ async function syncToCloud(){
   }
 }
 
-async function mergeFromCloud(){
-  if(!sbClient)return;
-  try{
-    const{data:list,error}=await sbClient.from('saiji').select('*');
-    if(error){console.error('Cloud fetch error:',error);return;}
-    if(!list||!list.length)return;
-    let merged=false;
-    for(const s of list){
-      const exists=db.events.find(e=>e.supabase_id===s.id);
-      if(!exists){
-        db.events.push({
-          id:Date.now()+Math.random(),
-          supabase_id:s.id,
-          name:s.saiji_name||'',
-          storeName:'',
-          startDate:s.start_date||'',
-          days:4,budget:null,entries:[]
-        });
-        merged=true;
-      }
-    }
-    if(merged){
-      if(!db.activeId)db.activeId=db.events[0]?.id||null;
-      save();updateHeader();renderAll();
-    }
-  }catch(e){console.error('Cloud merge error:',e);}
-}
+// ── クラウドからの取り込みは廃止（送信専用設計）
+// 旧 mergeFromCloud は起動時に saiji テーブルを全件取得して db.events に混ぜていたため、
+// (1) 他端末の催事が全端末に流れ込む (2) saiji_meisai を取らないので催事名だけ入り売上は空、
+// という2つの不具合があった。入力アプリは自分の催事だけをローカル保持し、
+// syncToCloud でアップロードするのみ。全体の閲覧は viewer.html（読み取り専用）で行う。
 
 const KEY='saiji_v6';
 // db = { activeId, events: [{id,name,storeName,startDate,days,entries:[]}] }
@@ -1130,8 +1108,7 @@ function init(){
     addItemRow();
     renderAll();
   }
-  // バックグラウンドでクラウドからマージ
-  setTimeout(()=>mergeFromCloud(),1000);
+  // ※ 送信専用設計：クラウドからの自動取り込みは行わない（下の mergeFromCloud 廃止コメント参照）
 }
 init();
 </script>
