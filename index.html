@@ -45,6 +45,9 @@ body{font-family:-apple-system,'Hiragino Sans',sans-serif;background:var(--bg);c
 .field{margin-bottom:12px}
 .field label{display:block;font-size:11px;font-weight:600;color:var(--sub);margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em}
 .req{color:var(--red);margin-left:2px}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
 input,select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;color:var(--text);background:var(--card);outline:none;-webkit-appearance:none;font-family:inherit}
 input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 textarea{min-height:56px;resize:none;line-height:1.5}
@@ -160,6 +163,7 @@ textarea{min-height:56px;resize:none;line-height:1.5}
 .confirm-ok{background:var(--red);color:#fff}
 .confirm-cancel{background:var(--bg);color:var(--sub)}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
@@ -184,7 +188,7 @@ textarea{min-height:56px;resize:none;line-height:1.5}
       <div class="s-div"></div>
       <div class="s-item"><div class="s-label">定価合計</div><div class="s-value" id="totTake">¥0</div></div>
       <div class="s-div"></div>
-      <div class="s-item"><div class="s-label">マシ合計</div><div class="s-value" id="totMashi">¥0</div></div>
+      <div class="s-item"><div class="s-label">売増合計</div><div class="s-value" id="totMashi">¥0</div></div>
     </div>
     <div id="budgetBar"></div>
     <div id="daySummaries"></div>
@@ -218,6 +222,9 @@ textarea{min-height:56px;resize:none;line-height:1.5}
   <div class="panel" id="panel-share">
     <div class="card">
       <div class="card-title">共有・書き出し</div>
+      <button id="cloudSyncBtn" class="btn no-print" style="background:#0EA5E9;color:#fff;font-size:14px;padding:13px;border-radius:10px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:none;cursor:pointer;font-family:inherit;font-weight:700" onclick="syncToCloud()">
+        ☁️ クラウドに同期
+      </button>
       <div class="share-grid" style="grid-template-columns:1fr 1fr 1fr">
         <button class="sh-btn sh-line" onclick="shareLine()">
           <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.105.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>LINEで送る
@@ -279,6 +286,7 @@ textarea{min-height:56px;resize:none;line-height:1.5}
     <button class="modal-close" onclick="closeSettings()">✕</button>
     <h2 id="settingsTitle">催事情報の設定</h2>
     <div class="field"><label>催事名</label><input id="s_name" type="text" placeholder="例：春の催事"></div>
+    <div class="field"><label>催事担当者</label><input id="s_tanto" type="text" placeholder="例：山田太郎" autocomplete="off"></div>
     <div class="field"><label>お店の名前</label><input id="s_store" type="text" placeholder="例：○○百貨店"></div>
     <div class="field"><label>開始日</label><input id="s_date" type="date"></div>
     <div class="field"><label>予算（下代目標）</label><input id="s_budget" type="number" placeholder="例：500000" inputmode="numeric"></div>
@@ -335,6 +343,116 @@ textarea{min-height:56px;resize:none;line-height:1.5}
 
 
 <script>
+// ── Supabase
+const SUPABASE_URL='https://ivzhkzvhtavvhlfvqpin.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_vRF4L6_TB7bt6YDWsigeKg_ihOAbeI_';
+let sbClient=null;
+
+function initSupabase(){
+  try{
+    sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  }catch(e){console.error('Supabase init error:',e);}
+}
+
+function genUUID(){
+  return'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
+    const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16);
+  });
+}
+
+async function syncToCloud(){
+  if(!sbClient){console.error('Supabase not initialized');return;}
+  const ev=activeEvent();
+  if(!ev){showToast('催事を選択してください');return;}
+  const btn=document.getElementById('cloudSyncBtn');
+  if(btn){btn.textContent='⏳ 同期中...';btn.disabled=true;}
+  try{
+    // supabase_id付与
+    if(!ev.supabase_id){ev.supabase_id=genUUID();save();}
+
+    // end_date計算
+    let endDate=null;
+    if(ev.startDate){
+      const d=new Date(ev.startDate);
+      d.setDate(d.getDate()+(ev.days||4)-1);
+      endDate=d.toISOString().split('T')[0];
+    }
+
+    // saiji upsert
+    const{error:se}=await sbClient.from('saiji').upsert({
+      id:ev.supabase_id,
+      saiji_name:ev.name||'',
+      start_date:ev.startDate||null,
+      end_date:endDate,
+      tanto:ev.saiji_tanto||''
+    },{onConflict:'id'});
+    if(se)throw se;
+
+    // meisai rows
+    const rows=[];
+    ev.entries.filter(entry=>!entry.cancelled).forEach(entry=>{
+      (entry.items||[]).forEach((item,idx)=>{
+        rows.push({
+          saiji_id:ev.supabase_id,
+          tanto:entry.tanto||null,
+          customer_name:entry.customer||null,
+          item_name:item.hinmei||null,
+          item_code:item.bango||null,
+          zeikomi_jodai:idx===0?(entry.hyoji||null):null,
+          shitadai:item.shita||null,
+          teika:item.take||null,
+          mashi:item.mashi||null,
+          biko:item.biko||null
+        });
+      });
+    });
+
+    // 既存の明細を全削除してから再挿入
+    const{error:delError}=await sbClient.from('saiji_meisai').delete().eq('saiji_id',ev.supabase_id);
+    if(delError)throw delError;
+
+    // 明細を再挿入（rowsが空でも問題なし）
+    if(rows.length>0){
+      const{error:me}=await sbClient.from('saiji_meisai').insert(rows);
+      if(me)throw me;
+    }
+    showToast('クラウドに同期しました ✓');
+  }catch(e){
+    console.error('Sync error:',e);
+    showToast('同期に失敗しました');
+  }finally{
+    if(btn){btn.textContent='☁️ クラウドに同期';btn.disabled=false;}
+  }
+}
+
+async function mergeFromCloud(){
+  if(!sbClient)return;
+  try{
+    const{data:list,error}=await sbClient.from('saiji').select('*');
+    if(error){console.error('Cloud fetch error:',error);return;}
+    if(!list||!list.length)return;
+    let merged=false;
+    for(const s of list){
+      const exists=db.events.find(e=>e.supabase_id===s.id);
+      if(!exists){
+        db.events.push({
+          id:Date.now()+Math.random(),
+          supabase_id:s.id,
+          name:s.saiji_name||'',
+          storeName:'',
+          startDate:s.start_date||'',
+          days:4,budget:null,entries:[]
+        });
+        merged=true;
+      }
+    }
+    if(merged){
+      if(!db.activeId)db.activeId=db.events[0]?.id||null;
+      save();updateHeader();renderAll();
+    }
+  }catch(e){console.error('Cloud merge error:',e);}
+}
+
 const KEY='saiji_v6';
 // db = { activeId, events: [{id,name,storeName,startDate,days,entries:[]}] }
 let db={activeId:null,events:[]};
@@ -403,6 +521,7 @@ function openNewEvent(){
   closeEventList();
   document.getElementById('settingsTitle').textContent='新しい催事を追加';
   document.getElementById('s_name').value='';
+  document.getElementById('s_tanto').value='';
   document.getElementById('s_store').value='';
   document.getElementById('s_date').value='';
   document.getElementById('s_budget').value='';
@@ -415,6 +534,7 @@ function openSettings(){
   const ev=activeEvent();
   document.getElementById('settingsTitle').textContent='催事情報の設定';
   document.getElementById('s_name').value=ev?.name||'';
+  document.getElementById('s_tanto').value=ev?.saiji_tanto||'';
   document.getElementById('s_store').value=ev?.storeName||'';
   document.getElementById('s_date').value=ev?.startDate||'';
   document.getElementById('s_budget').value=ev?.budget!=null?ev.budget:'';
@@ -425,17 +545,18 @@ function openSettings(){
 function closeSettings(){document.getElementById('settingsModal').classList.add('hidden');}
 function saveSettings(){
   const name=document.getElementById('s_name').value.trim();
+  const saiji_tanto=document.getElementById('s_tanto').value.trim();
   const storeName=document.getElementById('s_store').value.trim();
   const startDate=document.getElementById('s_date').value;
   const budget=document.getElementById('s_budget').value!==''?parseFloat(document.getElementById('s_budget').value):null;
   const days=parseInt(document.getElementById('s_days').value)||4;
   const mode=document.getElementById('settingsModal').dataset.mode;
   if(mode==='new'){
-    const newEv={id:Date.now(),name,storeName,startDate,days,budget,entries:[]};
+    const newEv={id:Date.now(),name,saiji_tanto,storeName,startDate,days,budget,entries:[]};
     db.events.push(newEv);db.activeId=newEv.id;
   } else {
     const ev=activeEvent();
-    if(ev){ev.name=name;ev.storeName=storeName;ev.startDate=startDate;ev.days=days;ev.budget=budget;}
+    if(ev){ev.name=name;ev.saiji_tanto=saiji_tanto;ev.storeName=storeName;ev.startDate=startDate;ev.days=days;ev.budget=budget;}
   }
   save();updateHeader();buildDaySel('daySelector',selDay,d=>selDay=d);closeSettings();renderAll();showToast('保存しました');
 }
@@ -468,7 +589,7 @@ function addItemRow(init){
     ${n>1?`<button class="btn-remove-item" onclick="removeItemRow(${n})">✕</button>`:''}
     <div class="row2">
       <div class="field"><label>品名</label><input id="i_hinmei_${n}" type="text" placeholder="商品名" autocomplete="off"></div>
-      <div class="field"><label>単品番号</label><input id="i_bango_${n}" type="text" placeholder="品番" autocomplete="off"></div>
+      <div class="field"><label>単品番号</label><input id="i_bango_${n}" type="text" placeholder="品番" autocomplete="off" inputmode="numeric"></div>
     </div>
     <div class="row2">
       <div class="field"><label>下代</label><input id="i_shita_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateItemMashi(${n},'i_')"></div>
@@ -503,7 +624,7 @@ function addEditItemRow(init){
     <button class="btn-remove-item" onclick="removeEditItemRow(${n})">✕</button>
     <div class="row2">
       <div class="field"><label>品名</label><input id="ei_hinmei_${n}" type="text" placeholder="商品名" autocomplete="off"></div>
-      <div class="field"><label>単品番号</label><input id="ei_bango_${n}" type="text" placeholder="品番" autocomplete="off"></div>
+      <div class="field"><label>単品番号</label><input id="ei_bango_${n}" type="text" placeholder="品番" autocomplete="off" inputmode="numeric"></div>
     </div>
     <div class="row2">
       <div class="field"><label>下代</label><input id="ei_shita_${n}" type="number" placeholder="0" inputmode="numeric" oninput="updateItemMashi(${n},'ei_')"></div>
@@ -537,7 +658,7 @@ function updateItemMashi(n,pfx){
   const t=parseFloat(document.getElementById(pfx+'take_'+n)?.value)||null;
   const el=document.getElementById(pfx+'mashi_'+n);
   if(!el)return;
-  if(s!==null&&t!==null){const m=s-t;el.innerHTML=`<span class="item-mashi ${m<0?'neg':'pos'}">マシ ¥${m.toLocaleString()}</span>`;}
+  if(s!==null&&t!==null){const m=s-t;el.innerHTML=`<span class="item-mashi ${m<0?'neg':'pos'}">売増 ¥${m.toLocaleString()}</span>`;}
   else el.innerHTML='';
 }
 function collectItems(cId,pfx){
@@ -650,7 +771,7 @@ function renderSummary(){
     const cc=all.filter(e=>e.cancelled).length;
     html+=`<div class="day-card"><div class="day-hd ${DC[d]}"><span>${dayLabel(d)}${cc?` <span style="font-size:11px;font-weight:400;color:var(--hint)">（キャンセル${cc}件）</span>`:''}</span><span class="day-total">${fmt(s)}</span></div>`;
     if(!act.length&&!cc)html+='<div style="padding:10px 14px;font-size:13px;color:var(--hint)">明細なし</div>';
-    else html+=`<div style="padding:8px 14px"><div class="erow"><span class="l">取引件数</span><span class="v">${act.length}件</span></div><div class="erow"><span class="l">下代合計</span><span class="v">${fmt(s)}</span></div><div class="erow"><span class="l">定価合計</span><span class="v">${fmt(tk)}</span></div><div class="erow"><span class="l">マシ合計</span><span class="v ${m<0?'neg':''}">${fmt(m)}</span></div></div>`;
+    else html+=`<div style="padding:8px 14px"><div class="erow"><span class="l">取引件数</span><span class="v">${act.length}件</span></div><div class="erow"><span class="l">下代合計</span><span class="v">${fmt(s)}</span></div><div class="erow"><span class="l">定価合計</span><span class="v">${fmt(tk)}</span></div><div class="erow"><span class="l">売増合計</span><span class="v ${m<0?'neg':''}">${fmt(m)}</span></div></div>`;
     html+='</div>';
   }
   if(!ev)html='<div class="empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><p>ヘッダーをタップして催事を追加してください</p></div>';
@@ -692,7 +813,7 @@ function renderList(){
       return`<div class="ecard-item">
         <div class="ecard-item-main">
           <span class="item-name">${it.hinmei||'（品名なし）'}${it.bango?` <span style="color:var(--hint);font-size:11px;">${it.bango}</span>`:''}</span>
-          <span class="item-vals">下代 ${fmt(it.shita)}${it.take!=null?' / 定価 '+fmt(it.take):''}${it.mashi!=null?`<span class="item-mashi-small" style="${mc}"> マシ ${fmt(it.mashi)}</span>`:''}</span>
+          <span class="item-vals">下代 ${fmt(it.shita)}${it.take!=null?' / 定価 '+fmt(it.take):''}${it.mashi!=null?`<span class="item-mashi-small" style="${mc}"> 売増 ${fmt(it.mashi)}</span>`:''}</span>
         </div>
         ${it.biko?`<div class="item-biko">📝 ${it.biko}</div>`:''}
       </div>`;
@@ -706,7 +827,7 @@ function renderList(){
         ${e.hyoji!=null?`<div class="erow"><span class="l">税込表地上代</span><span class="v">${fmt(e.hyoji)}</span></div>`:''}
         <div class="ecard-items">${itemsHtml}</div>
         <div class="erow" style="margin-top:4px"><span class="l">下代 小計</span><span class="v"><b>${fmt(shita)}</b></span></div>
-        <div class="erow"><span class="l">マシ 小計</span><span class="v ${mashi<0?'neg':'pos'}"><b>${fmt(mashi)}</b></span></div>
+        <div class="erow"><span class="l">売増 小計</span><span class="v ${mashi<0?'neg':'pos'}"><b>${fmt(mashi)}</b></span></div>
       </div>
       <div class="ecard-foot">
         <button class="btn-edit" onclick="openEdit(${e.id})">編集</button>
@@ -732,18 +853,18 @@ function buildText(){
     lines.push(`▼ ${dayLabel(d)}`);
     act.forEach(e=>{
       lines.push(`  ${e.customer}`);
-      (e.items||[]).forEach(it=>lines.push(`    ${it.hinmei||'－'} 下代:${fmt(it.shita)}${it.mashi!=null?' マシ:'+fmt(it.mashi):''}${it.biko?' ('+it.biko+')':''}`));
-      lines.push(`    → 小計 下代:${fmt(entryShita(e))} マシ:${fmt(entryMashi(e))}`);
+      (e.items||[]).forEach(it=>lines.push(`    ${it.hinmei||'－'} 下代:${fmt(it.shita)}${it.mashi!=null?' 売増:'+fmt(it.mashi):''}${it.biko?' ('+it.biko+')':''}`));
+      lines.push(`    → 小計 下代:${fmt(entryShita(e))} 売増:${fmt(entryMashi(e))}`);
     });
     if(can.length)lines.push(`  ※キャンセル ${can.length}件`);
     const s=act.reduce((a,e)=>a+entryShita(e),0);
     const m=act.reduce((a,e)=>a+entryMashi(e),0);
-    lines.push(`  小計：下代 ${fmt(s)}　マシ ${fmt(m)}`,'');
+    lines.push(`  小計：下代 ${fmt(s)}　売増 ${fmt(m)}`,'');
   }
   const ae=activeEntries();
   const ts=ae.reduce((a,e)=>a+entryShita(e),0);
   const tm=ae.reduce((a,e)=>a+entryMashi(e),0);
-  lines.push('◆ 催事合計',`  下代：${fmt(ts)}　マシ：${fmt(tm)}`);
+  lines.push('◆ 催事合計',`  下代：${fmt(ts)}　売増：${fmt(tm)}`);
   return lines.join('\n');
 }
 
@@ -792,8 +913,8 @@ function exportCSV(){
   const budgetInfo=ev.budget!=null?` / 予算:${fmt(ev.budget)} 達成率:${Math.round(ts/ev.budget*100)}%`:'';
   const info=[
     [q('催事名'),q(ev.name||''),q('店舗名'),q(ev.storeName||''),q('開始日'),q(ev.startDate||''),q('日数'),q((ev.days||4)+'日間')],
-    [q('下代合計'),q(fmtNum(ts)),q('定価合計'),q(fmtNum(tt)),q('マシ合計'),q(fmtNum(tm)),q('予算'),q(ev.budget!=null?fmtNum(ev.budget):'未設定'),q('達成率'),q(ev.budget!=null?Math.round(ts/ev.budget*100)+'%':'—')],
-    ['日付','担当','お客様名','税込表地上代','品名','単品番号','下代','定価','マシ','cost','備考','キャンセル'].map(q)
+    [q('下代合計'),q(fmtNum(ts)),q('定価合計'),q(fmtNum(tt)),q('売増合計'),q(fmtNum(tm)),q('予算'),q(ev.budget!=null?fmtNum(ev.budget):'未設定'),q('達成率'),q(ev.budget!=null?Math.round(ts/ev.budget*100)+'%':'—')],
+    ['日付','担当','お客様名','税込表地上代','品名','単品番号','下代','定価','売増','cost','備考','キャンセル'].map(q)
   ];
   const rows=[];
   entries().forEach(e=>{
@@ -836,14 +957,14 @@ function buildPrintDetail(){
   let html=`<div class="pt-summary">
     <span>下代合計: <b>${fmt(ts)}</b></span>
     <span>定価合計: <b>${fmt(tt)}</b></span>
-    <span>マシ合計: <b style="color:${tm<0?'#DC2626':'#16A34A'}">${fmt(tm)}</b></span>
+    <span>売増合計: <b style="color:${tm<0?'#DC2626':'#16A34A'}">${fmt(tm)}</b></span>
     ${budgetPart}
   </div>
   <table class="pt-table">
     <thead><tr>
       <th>日付</th><th>担当</th><th>お客様名</th><th>税込表地上代</th>
       <th>品名</th><th>品番</th><th class="num">下代</th><th class="num">定価</th>
-      <th class="num">マシ</th><th class="num">cost</th><th>備考</th>
+      <th class="num">売増</th><th class="num">cost</th><th>備考</th>
     </tr></thead><tbody>`;
 
   for(let d=1;d<=(ev.days||4);d++){
@@ -852,7 +973,7 @@ function buildPrintDetail(){
     const actD=dayEs.filter(e=>!e.cancelled);
     const ds=actD.reduce((a,e)=>a+entryShita(e),0);
     const dm=actD.reduce((a,e)=>a+entryMashi(e),0);
-    html+=`<tr class="pt-day-row"><td colspan="11">${dayLabel(d)}　下代: ${fmt(ds)}　マシ: ${fmt(dm)}（${actD.length}件）</td></tr>`;
+    html+=`<tr class="pt-day-row"><td colspan="11">${dayLabel(d)}　下代: ${fmt(ds)}　売増: ${fmt(dm)}（${actD.length}件）</td></tr>`;
     dayEs.forEach(e=>{
       const items=e.items||[];
       items.forEach((it,i)=>{
@@ -994,6 +1115,7 @@ function importCSV(input){
 function renderAll(){renderSummary();}
 
 function init(){
+  initSupabase();
   load();
   // 初回起動で催事がなければ自動でモーダルを開く
   if(!db.events.length){
@@ -1008,6 +1130,8 @@ function init(){
     addItemRow();
     renderAll();
   }
+  // バックグラウンドでクラウドからマージ
+  setTimeout(()=>mergeFromCloud(),1000);
 }
 init();
 </script>
