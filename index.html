@@ -30,7 +30,7 @@ body{font-family:-apple-system,'Hiragino Sans',sans-serif;background:var(--bg);c
 
 /* zoom:var(--fs-inv) で body の zoom を打ち消し、文字サイズ設定に関わらず常に固定サイズ表示。値は8桁(千万台)まで収まるサイズに */
 .summary-bar{background:var(--dark);color:#fff;border-radius:var(--radius);padding:14px 8px;margin-bottom:12px;display:flex;gap:2px;zoom:var(--fs-inv)}
-.s-item{flex:1;min-width:0;text-align:center;padding:0 2px}.s-label{font-size:10px;color:#9CA3AF;margin-bottom:3px}.s-value{font-size:14px;font-weight:700;white-space:nowrap}
+.s-item{flex:1;min-width:0;text-align:center;padding:0 2px}.s-label{font-size:10px;color:#9CA3AF;margin-bottom:3px}.s-value{font-size:18px;font-weight:700;white-space:nowrap}
 .s-div{width:1px;background:rgba(255,255,255,.15);margin:4px 0}
 .day-card{background:var(--card);border-radius:var(--radius);margin-bottom:10px;border:1px solid var(--border);overflow:hidden}
 .day-hd{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;border-left:3px solid}
@@ -767,6 +767,18 @@ function entryTake(e){return(e.items||[]).reduce((a,it)=>a+(it.take||0),0);}
 function entryMashi(e){return(e.items||[]).reduce((a,it)=>a+(it.mashi!=null?it.mashi:0),0);}
 
 // ── 集計
+// 集計バーの3値を、桁が長い時だけ自動で縮めて3列に収める（基本は大きめ18px。全列を同じサイズに揃える）
+function fitSummaryValues(){
+  const els=[...document.querySelectorAll('#panel-summary .summary-bar .s-value')];
+  if(!els.length)return;
+  els.forEach(el=>el.style.fontSize='');
+  let fs=parseFloat(getComputedStyle(els[0]).fontSize)||18;
+  let g=0;
+  while(els.some(el=>el.scrollWidth>el.clientWidth+0.5)&&fs>11&&g<12){
+    fs-=1;els.forEach(el=>el.style.fontSize=fs+'px');g++;
+  }
+}
+
 function renderSummary(){
   const ae=activeEntries();
   const ts=ae.reduce((a,e)=>a+entryShita(e),0);
@@ -775,6 +787,7 @@ function renderSummary(){
   document.getElementById('totShita').textContent=fmt(ts);
   document.getElementById('totTake').textContent=fmt(tt);
   const tmEl=document.getElementById('totMashi');tmEl.textContent=fmt(tm);tmEl.style.color=tm<0?'#FCA5A5':'#fff';
+  fitSummaryValues();
   const ev=activeEvent();const days=ev?.days||4;
   let html='';
   for(let d=1;d<=days;d++){
@@ -799,13 +812,14 @@ function renderSummary(){
   // 予算バー
   const budgetEl=document.getElementById('budgetBar');
   if(ev?.budget){
-    const pct=Math.min(100,Math.round(ts/ev.budget*100));
+    const pct=Math.round(ts/ev.budget*100);      // 実際の達成率（100%超はそのまま表示）
+    const pctBar=Math.min(100,Math.max(0,pct));   // バーの伸びは0〜100%で頭打ち
     const rem=ev.budget-ts;
     const cls=pct>=100?'budget-over':pct>=80?'budget-warn':'budget-ok';
     budgetEl.innerHTML=`<div class="budget-bar">
       <div class="budget-row"><span class="bl">予算</span><span class="bv">${fmt(ev.budget)}</span></div>
       <div class="budget-row"><span class="bl">達成率</span><span class="bv" style="color:${pct>=100?'var(--red)':pct>=80?'#D97706':'var(--accent)'}">${pct}%</span></div>
-      <div class="budget-progress"><div class="budget-progress-inner ${cls}" style="width:${pct}%"></div></div>
+      <div class="budget-progress"><div class="budget-progress-inner ${cls}" style="width:${pctBar}%"></div></div>
       <div class="budget-row" style="margin-top:6px"><span class="bl">${rem>=0?'残り':'超過'}</span><span class="bv" style="color:${rem<0?'var(--red)':'var(--green)'}">${fmt(Math.abs(rem))}</span></div>
     </div>`;
   } else {
