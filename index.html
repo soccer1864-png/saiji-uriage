@@ -12,6 +12,7 @@
   --green:#16A34A;--green-bg:#F0FDF4;--dark:#1F2937;--radius:10px;
   --safe-top:env(safe-area-inset-top,0px);--header-h:52px;--tab-h:58px;
   --fs:1; /* 文字サイズ倍率（設定で 標準1.0 / 大1.15 / 特大1.3・端末ごとに保存） */
+  --fs-inv:1; /* --fs の逆数（1/fs）。集計バーの zoom を打ち消して常に固定サイズにするため。JSで設定 */
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,'Hiragino Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;zoom:var(--fs)}
@@ -27,8 +28,9 @@ body{font-family:-apple-system,'Hiragino Sans',sans-serif;background:var(--bg);c
 .main{padding-top:calc(var(--safe-top) + var(--header-h) + 18px);padding-bottom:calc(var(--tab-h) + env(safe-area-inset-bottom, 0px) + 24px)}
 .panel{display:none;padding:12px 14px}.panel.active{display:block}
 
-.summary-bar{background:var(--dark);color:#fff;border-radius:var(--radius);padding:14px 10px;margin-bottom:12px;display:flex;gap:2px}
-.s-item{flex:1;min-width:0;text-align:center;padding:0 2px}.s-label{font-size:10px;color:#9CA3AF;margin-bottom:3px}.s-value{font-size:15px;font-weight:700;white-space:nowrap}
+/* zoom:var(--fs-inv) で body の zoom を打ち消し、文字サイズ設定に関わらず常に固定サイズ表示。値は8桁(千万台)まで収まるサイズに */
+.summary-bar{background:var(--dark);color:#fff;border-radius:var(--radius);padding:14px 8px;margin-bottom:12px;display:flex;gap:2px;zoom:var(--fs-inv)}
+.s-item{flex:1;min-width:0;text-align:center;padding:0 2px}.s-label{font-size:10px;color:#9CA3AF;margin-bottom:3px}.s-value{font-size:14px;font-weight:700;white-space:nowrap}
 .s-div{width:1px;background:rgba(255,255,255,.15);margin:4px 0}
 .day-card{background:var(--card);border-radius:var(--radius);margin-bottom:10px;border:1px solid var(--border);overflow:hidden}
 .day-hd{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;border-left:3px solid}
@@ -461,7 +463,7 @@ function save(){localStorage.setItem(KEY,JSON.stringify(db));}
 
 // ── 文字サイズ（アプリ全体の倍率 --fs を変更。端末ごとにlocalStorageへ保存。催事データとは別管理）
 const FS_KEY='saiji_fontscale';
-function applyFontScale(v){document.documentElement.style.setProperty('--fs',v);}
+function applyFontScale(v){const r=document.documentElement.style;r.setProperty('--fs',v);r.setProperty('--fs-inv',1/v);}
 function loadFontScale(){const v=parseFloat(localStorage.getItem(FS_KEY))||1;applyFontScale(v);}
 function setFontScale(v,btn){
   applyFontScale(v);
