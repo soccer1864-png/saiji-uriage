@@ -404,7 +404,8 @@ async function syncToCloud(){
       saiji_name:ev.name||'',
       start_date:ev.startDate||null,
       end_date:endDate,
-      tanto:ev.saiji_tanto||''
+      tanto:ev.saiji_tanto||'',
+      budget:ev.budget!=null?ev.budget:null
     },{onConflict:'id'});
     if(se)throw se;
 
@@ -418,10 +419,10 @@ async function syncToCloud(){
           customer_name:entry.customer||null,
           item_name:item.hinmei||null,
           item_code:item.bango||null,
-          zeikomi_jodai:idx===0?(entry.hyoji||null):null,
-          shitadai:item.shita||null,
-          teika:item.take||null,
-          mashi:item.mashi||null,
+          zeikomi_jodai:idx===0?(entry.hyoji??null):null,
+          shitadai:item.shita??null,
+          teika:item.take??null,
+          mashi:item.mashi??null,
           biko:item.biko||null
         });
       });
@@ -454,7 +455,7 @@ async function syncToCloud(){
 const KEY='saiji_v6';
 // db = { activeId, events: [{id,name,storeName,startDate,days,entries:[]}] }
 let db={activeId:null,events:[]};
-let selDay=1,editSelDay=1,editItemCount=0;
+let selDay=1,editSelDay=1,editItemCount=0,editingId=null;
 const DC=['','d1','d2','d3','d4','d5','d6','d7'];
 const BC=['','badge-d1','badge-d2','badge-d3','badge-d4','badge-d5','badge-d6','badge-d7'];
 
@@ -504,8 +505,8 @@ function openEventList(){
     content.innerHTML=db.events.map(ev=>`
       <div class="event-card${ev.id===db.activeId?' active-event':''}" onclick="switchEvent(${ev.id})">
         <div class="event-card-info">
-          <div class="event-card-name">${ev.name||'（名前なし）'}${ev.storeName?' — '+ev.storeName:''}</div>
-          <div class="event-card-sub">${ev.startDate||'日付未設定'} / ${ev.days||4}日間 / ${ev.entries.length}件</div>
+          <div class="event-card-name">${esc(ev.name)||'（名前なし）'}${ev.storeName?' — '+esc(ev.storeName):''}</div>
+          <div class="event-card-sub">${esc(ev.startDate)||'日付未設定'} / ${ev.days||4}日間 / ${ev.entries.length}件</div>
         </div>
         ${ev.id===db.activeId?'<div class="event-card-check">✓</div>':''}
         <button class="event-card-del" onclick="event.stopPropagation();deleteEvent(${ev.id})">🗑</button>
@@ -567,12 +568,13 @@ function saveSettings(){
   const days=parseInt(document.getElementById('s_days').value)||4;
   const mode=document.getElementById('settingsModal').dataset.mode;
   if(mode==='new'){
-    const newEv={id:Date.now(),name,saiji_tanto,storeName,startDate,days,budget,entries:[]};
+    const newEv={id:newId(),name,saiji_tanto,storeName,startDate,days,budget,entries:[]};
     db.events.push(newEv);db.activeId=newEv.id;
   } else {
     const ev=activeEvent();
     if(ev){ev.name=name;ev.saiji_tanto=saiji_tanto;ev.storeName=storeName;ev.startDate=startDate;ev.days=days;ev.budget=budget;}
   }
+  if(selDay>days)selDay=1;
   save();updateHeader();buildDaySel('daySelector',selDay,d=>selDay=d);closeSettings();renderAll();showToast('保存しました');
 }
 
@@ -598,7 +600,7 @@ function buildDaySel(cId,cur,setter){
 let itemCount=0;
 function addItemRow(init){
   itemCount++;const n=itemCount;
-  const div=document.createElement('div');div.className='item-row';div.id='item-'+n;
+  const div=document.createElement('div');div.className='item-row';div.id='i_item_'+n;
   div.innerHTML=`
     <div class="item-num">商品 ${n}</div>
     ${n>1?`<button class="btn-remove-item" onclick="removeItemRow(${n})">✕</button>`:''}
@@ -628,12 +630,12 @@ function addItemRow(init){
   document.getElementById('itemRows').appendChild(div);
   updateItemNums('itemRows');
 }
-function removeItemRow(n){document.getElementById('item-'+n).remove();updateItemNums('itemRows');}
+function removeItemRow(n){document.getElementById('i_item_'+n).remove();updateItemNums('itemRows');}
 
 // ── 商品行（編集）
 function addEditItemRow(init){
   editItemCount++;const n=editItemCount;
-  const div=document.createElement('div');div.className='item-row';div.id='item-'+n;
+  const div=document.createElement('div');div.className='item-row';div.id='ei_item_'+n;
   div.innerHTML=`
     <div class="item-num">商品 ${n}</div>
     <button class="btn-remove-item" onclick="removeEditItemRow(${n})">✕</button>
@@ -663,30 +665,35 @@ function addEditItemRow(init){
   document.getElementById('editItemRows').appendChild(div);
   updateItemNums('editItemRows');
 }
-function removeEditItemRow(n){document.getElementById('item-'+n).remove();updateItemNums('editItemRows');}
+function removeEditItemRow(n){document.getElementById('ei_item_'+n).remove();updateItemNums('editItemRows');}
 
 function updateItemNums(cId){
   document.querySelectorAll('#'+cId+' .item-row').forEach((el,i)=>el.querySelector('.item-num').textContent='商品 '+(i+1));
 }
 function updateItemMashi(n,pfx){
-  const s=parseFloat(document.getElementById(pfx+'shita_'+n)?.value)||null;
-  const t=parseFloat(document.getElementById(pfx+'take_'+n)?.value)||null;
+  const sv=document.getElementById(pfx+'shita_'+n)?.value;
+  const tv=document.getElementById(pfx+'take_'+n)?.value;
+  const s=sv!==undefined&&sv!==''?parseFloat(sv):null;
+  const t=tv!==undefined&&tv!==''?parseFloat(tv):null;
   const el=document.getElementById(pfx+'mashi_'+n);
   if(!el)return;
-  if(s!==null&&t!==null){const m=s-t;el.innerHTML=`<span class="item-mashi ${m<0?'neg':'pos'}">売増 ¥${m.toLocaleString()}</span>`;}
+  if(s!=null&&!isNaN(s)&&t!=null&&!isNaN(t)){const m=s-t;el.innerHTML=`<span class="item-mashi ${m<0?'neg':'pos'}">売増 ¥${m.toLocaleString()}</span>`;}
   else el.innerHTML='';
 }
 function collectItems(cId,pfx){
   const rows=[];
   document.querySelectorAll('#'+cId+' .item-row').forEach(el=>{
-    const n=el.id.replace('item-','');
-    const shita=parseFloat(document.getElementById(pfx+'shita_'+n)?.value)||0;
-    const take=document.getElementById(pfx+'take_'+n)?.value!==''?parseFloat(document.getElementById(pfx+'take_'+n)?.value):null;
+    const n=el.id.replace(pfx+'item_','');
+    const shitaVal=document.getElementById(pfx+'shita_'+n)?.value;
+    const takeVal=document.getElementById(pfx+'take_'+n)?.value;
+    const shitaEntered=shitaVal!==undefined&&shitaVal!=='';
+    const shita=shitaEntered?parseFloat(shitaVal)||0:0;
+    const take=takeVal!==undefined&&takeVal!==''?parseFloat(takeVal):null;
     const costVal=document.getElementById(pfx+'cost_'+n)?.value;
     rows.push({
       hinmei:document.getElementById(pfx+'hinmei_'+n)?.value.trim()||'',
       bango:document.getElementById(pfx+'bango_'+n)?.value.trim()||'',
-      shita,take,mashi:(shita&&take!==null)?shita-take:null,
+      shita,take,mashi:(shitaEntered&&take!==null)?shita-take:null,
       cost:costVal!==undefined&&costVal!==''?parseFloat(costVal):null,
       biko:document.getElementById(pfx+'biko_'+n)?.value.trim()||''
     });
@@ -703,7 +710,7 @@ function submitEntry(){
   const items=collectItems('itemRows','i_');
   if(!items.length){showToast('商品を1つ以上入力してください');return;}
   ev.entries.push({
-    id:Date.now(),day:selDay,cancelled:false,
+    id:newId(),day:selDay,cancelled:false,
     tanto:document.getElementById('f_tanto').value.trim(),customer,
     hyoji:document.getElementById('f_hyoji').value!==''?parseFloat(document.getElementById('f_hyoji').value):null,
     items
@@ -717,7 +724,7 @@ function submitEntry(){
 // ── 編集
 function openEdit(id){
   const e=entries().find(x=>x.id===id);if(!e)return;
-  editSelDay=e.day;editItemCount=0;
+  editSelDay=e.day;editItemCount=0;editingId=id;
   document.getElementById('e_id').value=id;
   document.getElementById('e_tanto').value=e.tanto||'';
   document.getElementById('e_customer').value=e.customer||'';
@@ -730,13 +737,15 @@ function openEdit(id){
 }
 function closeEdit(){document.getElementById('editModal').classList.add('hidden');}
 function saveEdit(){
-  const id=parseInt(document.getElementById('e_id').value);
+  const id=editingId;
   const e=entries().find(x=>x.id===id);if(!e)return;
   const customer=document.getElementById('e_customer').value.trim();
   if(!customer){showToast('お客様名を入力してください');return;}
+  const items=collectItems('editItemRows','ei_');
+  if(!items.length){showToast('商品を1つ以上入力してください');return;}
   e.day=editSelDay;e.tanto=document.getElementById('e_tanto').value.trim();e.customer=customer;
   e.hyoji=document.getElementById('e_hyoji').value!==''?parseFloat(document.getElementById('e_hyoji').value):null;
-  e.items=collectItems('editItemRows','ei_');
+  e.items=items;
   save();closeEdit();renderList();renderSummary();showToast('編集しました');
 }
 
@@ -752,6 +761,11 @@ async function deleteEntry(id){
 }
 
 // ── ヘルパー
+// id衝突防止：Date.now()だけだと同一ミリ秒内の連続実行で重複しうるため、連番を足して一意化
+let __idSeq=0;
+function newId(){__idSeq=(__idSeq+1)%1000;return Date.now()*1000+__idSeq;}
+// innerHTMLに差し込むユーザー入力文字列は必ずエスケープ（他人が作ったCSVを読み込む運用があるため）
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function fmt(n){return n!=null?'¥'+Math.round(n).toLocaleString():'—';}
 function fmtNum(n){return n!=null?Math.round(n).toLocaleString():'';}
 function dayLabel(d){
@@ -841,15 +855,15 @@ function renderList(){
       const mc=it.mashi!=null?(it.mashi<0?'color:var(--red)':'color:var(--green)'):'';
       return`<div class="ecard-item">
         <div class="ecard-item-main">
-          <span class="item-name">${it.hinmei||'（品名なし）'}${it.bango?` <span style="color:var(--hint);font-size:11px;">${it.bango}</span>`:''}</span>
+          <span class="item-name">${esc(it.hinmei)||'（品名なし）'}${it.bango?` <span style="color:var(--hint);font-size:11px;">${esc(it.bango)}</span>`:''}</span>
           <span class="item-vals">下代 ${fmt(it.shita)}${it.take!=null?' / 定価 '+fmt(it.take):''}${it.mashi!=null?`<span class="item-mashi-small" style="${mc}"> 売増 ${fmt(it.mashi)}</span>`:''}</span>
         </div>
-        ${it.biko?`<div class="item-biko">📝 ${it.biko}</div>`:''}
+        ${it.biko?`<div class="item-biko">📝 ${esc(it.biko)}</div>`:''}
       </div>`;
     }).join('');
     return`<div class="ecard${e.cancelled?' cancelled':''}">
       <div class="ecard-hd">
-        <div class="ecard-name">${e.customer}${e.tanto?` <span style="font-weight:400;color:var(--sub);font-size:12px;">/ ${e.tanto}</span>`:''}</div>
+        <div class="ecard-name">${esc(e.customer)}${e.tanto?` <span style="font-weight:400;color:var(--sub);font-size:12px;">/ ${esc(e.tanto)}</span>`:''}</div>
         <div class="ecard-badges">${e.cancelled?'<span class="badge badge-cancel">キャンセル</span>':''}<span class="badge ${BC[e.day]}">${e.day}日目</span></div>
       </div>
       <div class="ecard-body">
@@ -1010,16 +1024,16 @@ function buildPrintDetail(){
         const mc=it.mashi!=null?(it.mashi<0?' neg':' pos'):'';
         html+=`<tr${e.cancelled?' class="cancelled"':''}>
           <td>${isFirst?dayLabel(e.day):''}</td>
-          <td>${isFirst?(e.tanto||''):''}</td>
-          <td>${isFirst?e.customer:''}</td>
+          <td>${isFirst?esc(e.tanto):''}</td>
+          <td>${isFirst?esc(e.customer):''}</td>
           <td class="num">${isFirst&&e.hyoji!=null?fmt(e.hyoji):''}</td>
-          <td>${it.hinmei||''}</td>
-          <td>${it.bango||''}</td>
+          <td>${esc(it.hinmei)}</td>
+          <td>${esc(it.bango)}</td>
           <td class="num">${it.shita?fmt(it.shita):''}</td>
           <td class="num">${it.take!=null?fmt(it.take):''}</td>
           <td class="num${mc}">${it.mashi!=null?fmt(it.mashi):''}</td>
           <td class="num">${it.cost!=null?fmt(it.cost):''}</td>
-          <td>${it.biko||''}</td>
+          <td>${esc(it.biko)}</td>
         </tr>`;
       });
     });
@@ -1096,9 +1110,10 @@ function importCSV(input){
           const day=parseInt(dayStr)||1;
           // "X日目" から数字を抽出
           const dayNum=parseInt((dayStr||'').match(/(\d+)日目/)?.[1])||1;
-          const hyoji=hyojiStr?parseFloat(hyojiStr.replace(/,/g,''))||null:null;
+          const hyojiEntered=hyojiStr!==undefined&&hyojiStr!=='';
+          const hyoji=hyojiEntered?(parseFloat(hyojiStr.replace(/,/g,''))||0):null;
           currentEntry={
-            id:Date.now()+Math.random(),
+            id:newId(),
             day:dayNum,
             cancelled:cancelStr==='キャンセル',
             tanto:tanto||'',
@@ -1109,13 +1124,14 @@ function importCSV(input){
           importedEntries.push(currentEntry);
         }
         if(currentEntry&&hinmei!==undefined){
-          const shita=shitaStr?parseFloat(shitaStr.replace(/,/g,''))||0:0;
+          const shitaEntered=shitaStr!==undefined&&shitaStr!=='';
+          const shita=shitaEntered?(parseFloat(shitaStr.replace(/,/g,''))||0):0;
           const take=takeStr?parseFloat(takeStr.replace(/,/g,''))||null:null;
           const cost=costStr?parseFloat(costStr.replace(/,/g,''))||null:null;
           currentEntry.items.push({
             hinmei:hinmei||'',bango:bango||'',
             shita,take,
-            mashi:(shita&&take!==null)?shita-take:null,
+            mashi:(shitaEntered&&take!==null)?shita-take:null,
             cost,biko:biko||''
           });
         }
@@ -1126,7 +1142,7 @@ function importCSV(input){
       // 既存の催事を探すか新規作成
       let ev=db.events.find(e=>e.name===evName&&e.storeName===storeName);
       if(!ev){
-        ev={id:Date.now(),name:evName,storeName,startDate,days,budget:null,entries:[]};
+        ev={id:newId(),name:evName,storeName,startDate,days,budget:null,entries:[]};
         db.events.push(ev);
       }
       ev.entries=[...ev.entries,...importedEntries];
